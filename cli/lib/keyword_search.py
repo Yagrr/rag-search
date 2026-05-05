@@ -1,5 +1,7 @@
 import string
 
+from nltk.stem import PorterStemmer
+
 from .utils_search import DEFAULT_SEARCH_LIMIT
 from .utils_search import load_stopwords
 
@@ -11,8 +13,8 @@ def command_search(query: str, data: dict, field_to_search: str = "title", limit
 
     for i, datum in enumerate(data):
         field_values: str = data[i][field_to_search]
-        query_to_match: list[str] = tokenize_text(preprocess_text(query))
-        data_to_match: list[str] = tokenize_text(preprocess_text(field_values))
+        query_to_match: list[str] = stem_text(tokenize_text(preprocess_text(query)))
+        data_to_match: list[str] = stem_text(tokenize_text(preprocess_text(field_values)))
 
         if get_matching_tokens(query_to_match, data_to_match):
             matches.append(datum)
@@ -39,6 +41,16 @@ def tokenize_text(input_str: str) -> list[str]:
     stop_words = load_stopwords()
     tokens = [s for s in input_str.split() if s != "" and s not in stop_words]
     return tokens
+
+def stem_text(tokens_list: list[str]) -> list[str]:
+    tokens_stemmed = []
+
+    stemmer = PorterStemmer()
+
+    for token in tokens_list:
+        tokens_stemmed.append(stemmer.stem(token))
+
+    return tokens_stemmed
 
 
 def get_matching_tokens(list1: list[str], list2: list[str]) -> list[str]:
