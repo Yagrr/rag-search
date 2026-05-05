@@ -14,6 +14,7 @@ def load_movies() -> dict:
 
     return data["movies"]
 
+
 def load_stopwords() -> list[str]:
     with open(PATH_FILTER, "r") as file:
         data = file.read()

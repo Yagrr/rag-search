@@ -25,8 +25,7 @@ def command_search(query: str, data: dict, field_to_search: str = "title", limit
 
 
 def preprocess_text(input_str: str) -> str:
-    """ Cull non alphanumeric characters
-    """
+    """Cull non alphanumeric characters"""
     input_str = input_str.lower()
     input_str = input_str.translate(str.maketrans("", "", string.punctuation))
 
@@ -34,13 +33,14 @@ def preprocess_text(input_str: str) -> str:
 
 
 def tokenize_text(input_str: str) -> list[str]:
-    """ Tokenize text by whitespace inbetween words.
+    """Tokenize text by whitespace inbetween words.
     Cull empty strings
     Cull stop words
     """
     stop_words = load_stopwords()
     tokens = [s for s in input_str.split() if s != "" and s not in stop_words]
     return tokens
+
 
 def stem_text(tokens_list: list[str]) -> list[str]:
     tokens_stemmed = []
