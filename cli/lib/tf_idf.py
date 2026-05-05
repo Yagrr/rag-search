@@ -51,7 +51,7 @@ class InvertedIndex:
 
         return
 
-    def save(self, path_dst: str = PATH_CACHE):
+    def save_cache(self, path_dst: str = PATH_CACHE):
         """
         Save the index and docmap attributes to disk using pickle module's dump
         function. Destination path defaults to /cache/.

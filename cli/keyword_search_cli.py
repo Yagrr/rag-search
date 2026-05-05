@@ -33,7 +33,7 @@ def main() -> None:
             docs = InvertedIndex()
             docs.build()
             print("Build successful!")
-            docs.save()
+            docs.save_cache()
             print(f"First document for token 'merida' = {docs.get_documents('merida')}")
 
 
