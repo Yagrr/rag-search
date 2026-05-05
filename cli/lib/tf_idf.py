@@ -1,5 +1,5 @@
 import os
-from pickle import dump
+from pickle import dump, load
 
 from .keyword_search import tokenize_text
 from .utils_search import load_movies, PATH_CACHE
@@ -74,3 +74,27 @@ class InvertedIndex:
                 print(f"Save docmap.pkl to disk at : {path_dst}/")
         except Exception as e:
             print(f"Error while saving: {e}")
+
+    def load_cache(self, path_dst: str = PATH_CACHE):
+        """ 
+        Loads index.pkl and docmap.pkl from path_dst folder then sets the
+        index and docmap of the InvertedIndex to the loaded data.
+        """
+
+        try:
+            path_to_index_pkl = os.path.join(path_dst, "index.pkl")
+            path_to_docmap_pkl = os.path.join(path_dst, "index.pkl")
+            with open(path_to_index_pkl, "rb") as file_index:
+                index = load(file_index)
+
+            with open(path_to_docmap_pkl, "rb") as file_docmap:
+                docmap = load(file_docmap)
+
+            self.index = index
+            self.docmap = docmap
+
+        except Exception as e:
+            print(f"Error while loading: {e}")
+
+        pass
+
