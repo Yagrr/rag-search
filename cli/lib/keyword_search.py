@@ -45,7 +45,7 @@ def get_matching_tokens(list1: list[str], list2: list[str]) -> list[str]:
     """Checking if a word in list2 is in list1 means that the tokens in list1 are also in list2."""
     matching_tokens = []
     for token in list1:
-        match = list(filter(lambda ls: ls.startswith(token), list2))
+        match = list(filter(lambda ls: token in ls, list2))
         matching_tokens.extend(match)
 
     return matching_tokens
