@@ -1,13 +1,37 @@
 import argparse
 import json
+import string
 
 
-def search_keyword(kw: str, dict_movies: dict) -> list:
+def cull_non_alphanumerics(input_str: str) -> str:
+    table = str.maketrans("", "", string.punctuation)
+    input_str = input_str.translate(table)
+    return input_str
+
+
+def tokenize(input_str: str) -> list[str]:
+    tokens = [s.lower() for s in input_str.split() if s != ""]
+    return tokens
+
+
+def get_matches_in_lists(list1: list[str], list2: list[str]) -> list[str]:
+    """Checking if a word in list2 is in list1 means that the tokens in list1 are also in list2."""
     matches = []
+    for token in list1:
+        match = list(filter(lambda ls: ls.startswith(token), list2))
+        matches.extend(match)
 
-    for i in range(0, len(dict_movies["movies"])):
-        title = dict_movies["movies"][i]["title"]
-        if kw in title:
+    return matches
+
+
+def search_keyword(kw: str, data_dict: dict, field: str = "title") -> list:
+    matches = []
+    for i in range(0, len(data_dict["movies"])):
+        title: str = data_dict["movies"][i][field]
+        kw_to_match: list[str] = tokenize(cull_non_alphanumerics(kw))
+        data_to_match: list[str] = tokenize(cull_non_alphanumerics(title))
+
+        if get_matches_in_lists(kw_to_match, data_to_match):
             matches.append(title)
 
     return matches
@@ -21,8 +45,11 @@ def format_search_output(list_results: list, max_results: int = 0) -> str:
     if max_results == 0:
         max_results = len(list_results)
 
+    if max_results > len(list_results):
+        max_results = len(list_results)
+
     for i in range(0, max_results):
-        output += f"\n{i + 1}. {list_results[i]}\n"
+        output += f"\n{i + 1}. {list_results[i]}"
 
     return output
 
