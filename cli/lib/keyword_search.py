@@ -1,6 +1,7 @@
 import string
 
 from .utils_search import DEFAULT_SEARCH_LIMIT
+from .utils_search import load_stopwords
 
 # ======== Pre-processing  ========
 
@@ -26,14 +27,17 @@ def preprocess_text(input_str: str) -> str:
     """
     input_str = input_str.lower()
     input_str = input_str.translate(str.maketrans("", "", string.punctuation))
+
     return input_str
 
 
 def tokenize_text(input_str: str) -> list[str]:
     """ Tokenize text by whitespace inbetween words.
     Cull empty strings
+    Cull stop words
     """
-    tokens = [s for s in input_str.split() if s != ""]
+    stop_words = load_stopwords()
+    tokens = [s for s in input_str.split() if s != "" and s not in stop_words]
     return tokens
 
 
@@ -45,17 +49,3 @@ def get_matching_tokens(list1: list[str], list2: list[str]) -> list[str]:
         matching_tokens.extend(match)
 
     return matching_tokens
-
-
-def print_search_results(list_results: list, max_results: int = 0) -> None:
-    if not list_results:
-        return print("No results!")
-
-    if max_results == 0:
-        max_results = len(list_results)
-
-    if max_results > len(list_results):
-        max_results = len(list_results)
-
-    for i in range(0, max_results):
-        print(f"\n{i + 1}. {list_results[i]}")
