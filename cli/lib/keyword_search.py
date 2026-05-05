@@ -38,7 +38,7 @@ def tokenize_text(input_str: str) -> list[str]:
     Cull stop words
     """
     stop_words = load_stopwords()
-    tokens = [s for s in input_str.split() if s != "" and s not in stop_words]
+    tokens = [s.lower() for s in input_str.split() if s != "" and s not in stop_words]
     return tokens
 
 
