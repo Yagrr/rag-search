@@ -25,7 +25,8 @@ class InvertedIndex:
         return
 
     def get_documents(self, term: str) -> list[int]:
-        """Get the set of document IDs for a given token, and return them as a
+        """
+        Get the set of document IDs for a given token, and return them as a
         list, sorted in ascending order.
         Assuming that the input term is a single word or token.
         """
@@ -33,7 +34,8 @@ class InvertedIndex:
         return sorted(list(documents))
 
     def build(self) -> None:
-        """Iterate over all indexes with `__add_document()`, concatenate both
+        """
+        Iterate over all indexes with `__add_document()`, concatenate both
         the title and description for use as input text.
         """
         # TODO: Hard coded data sources and field for now. Need to create more flexible API
@@ -52,7 +54,7 @@ class InvertedIndex:
     def save(self, path_dst: str = PATH_CACHE):
         """
         Save the index and docmap attributes to disk using pickle module's dump
-        function
+        function. Destination path defaults to /cache/.
         """
         path_dst = os.path.normpath(os.path.abspath(path_dst))
 
