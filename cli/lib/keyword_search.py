@@ -99,7 +99,6 @@ class InvertedIndex:
 
 def command_search(query: str, field_to_search: str = "title", limit: int = DEFAULT_SEARCH_LIMIT) -> list[dict]:
     matches = []
-
     doc_ids = []
     index = InvertedIndex()
 
@@ -108,7 +107,7 @@ def command_search(query: str, field_to_search: str = "title", limit: int = DEFA
     except Exception as e:
         print(f"Error loading index from cache while searching: {e}")
 
-    tokens_query: list[str] = stem_text(tokenize_text(preprocess_text(query)))
+    tokens_query: list[str] = tokenize_text(query)
 
     for tk in tokens_query:
         doc_ids.extend(index.get_documents(tk))
@@ -120,6 +119,8 @@ def command_search(query: str, field_to_search: str = "title", limit: int = DEFA
 
     return matches
 
+# ======== Pre-processing  ========
+
 
 def preprocess_text(input_str: str) -> str:
     """Cull non alphanumeric characters"""
@@ -129,17 +130,7 @@ def preprocess_text(input_str: str) -> str:
     return input_str
 
 
-def tokenize_text(input_str: str) -> list[str]:
-    """Tokenize text by whitespace inbetween words.
-    Cull empty strings
-    Cull stop words
-    """
-    stop_words = load_stopwords()
-    tokens = [s.lower() for s in input_str.split() if s != "" and s not in stop_words]
-    return tokens
-
-
-def stem_text(tokens_list: list[str]) -> list[str]:
+def stem_tokens(tokens_list: list[str]) -> list[str]:
     tokens_stemmed = []
 
     stemmer = PorterStemmer()
@@ -148,3 +139,15 @@ def stem_text(tokens_list: list[str]) -> list[str]:
         tokens_stemmed.append(stemmer.stem(token))
 
     return tokens_stemmed
+
+
+def tokenize_text(input_str: str) -> list[str]:
+    """Tokenize text by whitespace inbetween words.
+    Cull empty strings
+    Cull stop words
+    """
+    input_str = preprocess_text(input_str)
+    stop_words = load_stopwords()
+    tokens = [s.lower() for s in input_str.split() if s != "" and s not in stop_words]
+    tokens = stem_tokens(tokens)
+    return tokens
