@@ -25,7 +25,6 @@ def main() -> None:
             if not results:
                 print("No results found")
             for i, res in enumerate(results, 1):
-                # TODO: results only contain ID. Need to find a way to return full doc
                 print(f"{i}. ({res['id']}) {res['title']}")
 
         case "build":
