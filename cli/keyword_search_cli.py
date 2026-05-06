@@ -1,8 +1,6 @@
 import argparse
 
-from lib.keyword_search import command_search
-from lib.utils_search import load_movies
-from lib.tf_idf import InvertedIndex
+from lib.keyword_search import command_search, InvertedIndex
 
 
 def main() -> None:
@@ -16,7 +14,6 @@ def main() -> None:
     search_parser = subparsers.add_parser("build", help="Build index")
 
     args = parser.parse_args()
-    data = load_movies()
 
     # ======== Search ========
 
@@ -24,8 +21,11 @@ def main() -> None:
         case "search":
             # print the search query here
             print(f"Searching for: {args.query}")
-            results = command_search(args.query, data)
+            results = command_search(args.query)
+            if not results:
+                print("No results found")
             for i, res in enumerate(results, 1):
+                # TODO: results only contain ID. Need to find a way to return full doc
                 print(f"{i}. {res['title']}")
 
         case "build":
@@ -34,9 +34,6 @@ def main() -> None:
             docs.build()
             print("Build successful!")
             docs.save_cache()
-            print(f"First document for token 'merida' = {docs.get_documents('merida')}")
-
-
 
         case _:
             parser.print_help()
