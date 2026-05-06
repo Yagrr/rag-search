@@ -1,6 +1,7 @@
 import os
 import pickle
 import string
+from collections import defaultdict
 
 from nltk.stem import PorterStemmer
 
@@ -18,7 +19,6 @@ class InvertedIndex:
         self.index = defaultdict(set)
         self.docmap: dict[int, dict] = {}
         self.path_index = os.path.join(PATH_CACHE, "index.pkl")
-
         self.path_docmap = os.path.join(PATH_CACHE, "docmap.pkl")
 
     def __add_document(self, doc_id: int, text: str) -> None:
@@ -51,7 +51,6 @@ class InvertedIndex:
         field_1 = "title"
         field_2 = "description"
 
-
         for doc in data:
             doc_id = doc["id"]
             doc_info = f"{doc[field_1]} {doc[field_2]}"
@@ -70,7 +69,6 @@ class InvertedIndex:
         try:
             with open(self.path_index, "wb") as file:
                 pickle.dump(self.index, file)
-
             with open(self.path_docmap, "wb") as file:
                 pickle.dump(self.docmap, file)
         except Exception as e:
@@ -94,8 +92,17 @@ class InvertedIndex:
         except Exception as e:
             print(f"Error while loading: {e}")
 
-# ======== Pre-processing  ========
 
+# ======== Main command  ========
+
+
+def command_build() -> None:
+    index = InvertedIndex()
+    index.build()
+    index.save_cache()
+    print(f"Save index.pkl to disk at : {index.path_index}")
+    print(f"Save index.pkl to disk at : {index.path_docmap}")
+    
 
 def command_search(query: str, field_to_search: str = "title", limit: int = DEFAULT_SEARCH_LIMIT) -> list[dict]:
     matches = []

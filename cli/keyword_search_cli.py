@@ -1,6 +1,6 @@
 import argparse
 
-from lib.keyword_search import command_search, InvertedIndex
+from lib.keyword_search import command_search, command_build
 
 
 def main() -> None:
@@ -26,14 +26,12 @@ def main() -> None:
                 print("No results found")
             for i, res in enumerate(results, 1):
                 # TODO: results only contain ID. Need to find a way to return full doc
-                print(f"{i}. {res['title']}")
+                print(f"{i}. ({res['id']}) {res['title']}")
 
         case "build":
             print("Building inverted index...")
-            docs = InvertedIndex()
-            docs.build()
+            command_build()
             print("Build successful!")
-            docs.save_cache()
 
         case _:
             parser.print_help()
