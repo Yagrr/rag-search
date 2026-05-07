@@ -47,17 +47,14 @@ def main() -> None:
                 print(f"{i}. ({res['id']}) {res['title']}")
 
         case "tf":
-            print("Term frequency")
             count = command_tf(args.id, args.term)
-            print(f"(ID: {args.id}) {args.term}: {count}")
+            print(f"Term frequency of '{args.term}' in (ID: {args.id}): {count}")
 
         case "idf":
-            print("Inverted Document Frequency")
             idf = command_idf(args.term)
             print(f"Inverse document frequency of '{args.term}': {idf:.2f}")
 
         case "tfidf":
-            print("TF-IDF")
             tfidf = command_tfidf(args.id, args.term)
             print(f"TF-IDF score of '{args.term}' in document '{args.id}': {tfidf:.2f}'")
 
