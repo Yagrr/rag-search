@@ -101,6 +101,7 @@ class InvertedIndex:
         list, sorted in ascending order.
         Assuming that the input term is a single word or token.
         """
+        term = tokenize_text(term)[0]
         doc_ids = self.index.get(term, set())
         return sorted(list(doc_ids))
 
@@ -117,6 +118,12 @@ class InvertedIndex:
             raise ValueError(f"Error - term must be single token: '{term}'")
 
         return self.term_frequencies[doc_id][tokens[0]]
+
+    def get_idf(self, term: str) -> float:
+        count_total_docs = len(self.docmap)
+        count_term_matching_doc = len(self.get_documents(term))
+        idf =  math.log((count_total_docs + 1) / (count_term_matching_doc + 1))
+        return idf
 
 
 # ======== Main command  ========
@@ -181,11 +188,7 @@ def command_idf(term: str) -> float:
     except Exception as e:
         print(f"Error loading index from cache while getting inverse document frequency: {e}")
 
-    count_total_docs = len(index.docmap)
-    count_term_matching_doc = len(index.get_documents(term))
-
-    idf =  math.log((count_total_docs + 1) / (count_term_matching_doc + 1))
-    return idf
+    return index.get_idf(term)
 
 # ======== Pre-processing  ========
 
