@@ -101,8 +101,12 @@ class InvertedIndex:
         list, sorted in ascending order.
         Assuming that the input term is a single word or token.
         """
-        term = tokenize_text(term)[0]
-        doc_ids = self.index.get(term, set())
+        tokens = tokenize_text(term)
+
+        if len(tokens) != 1:
+            raise ValueError(f"Error - term must be single token '{term}'")
+
+        doc_ids = self.index.get(tokens[0], set())
         return sorted(list(doc_ids))
 
     def get_tf(self, doc_id: int, term: str) -> int:
