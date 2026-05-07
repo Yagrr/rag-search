@@ -124,6 +124,10 @@ class InvertedIndex:
         count_term_matching_doc = len(self.get_documents(term))
         idf =  math.log((count_total_docs + 1) / (count_term_matching_doc + 1))
         return idf
+    
+    def get_tfidf(self, doc_id: int, term: str) -> float:
+        tfidf = self.get_tf(doc_id, term) * self.get_idf(term)
+        return tfidf
 
 
 # ======== Main command  ========
@@ -164,14 +168,13 @@ def command_search(query: str, field_to_search: str = "title", limit: int = DEFA
 
     return matches
 
+
 def command_tf(doc_id: int, term: str) -> int:
     """
-    Command for getting the term frequency for a given term in given document ID (doc_id).
-    Returns an integer count.
+    Command for getting the term frequency for a given term in given document
+    ID (doc_id). Returns an integer count.
     """
-
     index = InvertedIndex()
-
     try:
         index.load_cache()
     except Exception as e:
@@ -182,13 +185,25 @@ def command_tf(doc_id: int, term: str) -> int:
 
 def command_idf(term: str) -> float:
     index = InvertedIndex()
-
     try:
         index.load_cache()
     except Exception as e:
-        print(f"Error loading index from cache while getting inverse document frequency: {e}")
+        print(
+            f"Error loading index from cache while getting inverse document frequency: {e}"
+        )
 
     return index.get_idf(term)
+
+
+def command_tfidf(doc_id: int, term: str):
+    index = InvertedIndex()
+    try:
+        index.load_cache()
+    except Exception as e:
+        print(f"Error loading index from cache while getting TF-IDF: {e}")
+
+    return index.get_tfidf(doc_id, term)
+
 
 # ======== Pre-processing  ========
 
