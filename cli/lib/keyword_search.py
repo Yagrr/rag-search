@@ -1,7 +1,7 @@
 import os
 import pickle
 import string
-from collections import defaultdict
+from collections import defaultdict, Counter
 
 from nltk.stem import PorterStemmer
 
@@ -18,14 +18,18 @@ class InvertedIndex:
     def __init__(self) -> None:
         self.index = defaultdict(set)
         self.docmap: dict[int, dict] = {}
+        self.term_frequencies = defaultdict(Counter)
         self.path_index = os.path.join(PATH_CACHE, "index.pkl")
         self.path_docmap = os.path.join(PATH_CACHE, "docmap.pkl")
+        self.path_term_frequencies = os.path.join(PATH_CACHE, "term_frequencies.pkl")
 
     def __add_document(self, doc_id: int, text: str) -> None:
         """
         Tokenize the input text, then add each token to the index with the document ID
         """
         tokens = tokenize_text(text)
+        for token in tokens:
+            self.term_frequencies[doc_id][token] += 1
         for token in set(tokens):
             self.index[token].add(doc_id)
         return
@@ -38,6 +42,25 @@ class InvertedIndex:
         """
         doc_ids = self.index.get(term, set())
         return sorted(list(doc_ids))
+
+    def get_tf(self, doc_id: int, term: str) -> int:
+        """
+        Get term frequencies for a given term and document_id in term_frequencies attribute.
+
+        Passes through term to tokenize_text() for preprocessing, and stemming.
+        Raise value error if more than one token.
+        """
+        tokens = tokenize_text(term)
+        count = 0
+
+        if len(tokens) > 1:
+            raise ValueError(f"Error - input get_tf() term has more than one token: '{term}'")
+
+        for token in tokens:
+            count += self.term_frequencies[doc_id][token]
+
+        return count
+
 
     def build(self) -> None:
         """
@@ -71,6 +94,8 @@ class InvertedIndex:
                 pickle.dump(self.index, file)
             with open(self.path_docmap, "wb") as file:
                 pickle.dump(self.docmap, file)
+            with open(self.path_term_frequencies, "wb") as file:
+                pickle.dump(self.term_frequencies, file)
         except Exception as e:
             print(f"Error while saving: {e}")
 
@@ -85,9 +110,12 @@ class InvertedIndex:
                 index = pickle.load(file_index)
             with open(self.path_docmap, "rb") as file_docmap:
                 docmap = pickle.load(file_docmap)
+            with open(self.path_term_frequencies, "rb") as file_tf:
+                term_frequencies = pickle.load(file_tf)
 
             self.index = index
             self.docmap = docmap
+            self.term_frequencies = term_frequencies
 
         except Exception as e:
             print(f"Error while loading: {e}")
@@ -95,13 +123,13 @@ class InvertedIndex:
 
 # ======== Main command  ========
 
-
 def command_build() -> None:
     index = InvertedIndex()
     index.build()
     index.save_cache()
     print(f"Save index.pkl to disk at : {index.path_index}")
-    print(f"Save index.pkl to disk at : {index.path_docmap}")
+    print(f"Save docmap.pkl to disk at : {index.path_docmap}")
+    print(f"Save term_frequencies.pkl to disk at : {index.path_term_frequencies}")
     
 
 def command_search(query: str, field_to_search: str = "title", limit: int = DEFAULT_SEARCH_LIMIT) -> list[dict]:
@@ -125,6 +153,17 @@ def command_search(query: str, field_to_search: str = "title", limit: int = DEFA
             break
 
     return matches
+
+def command_tf(doc_id: int, term: str):
+
+    index = InvertedIndex()
+
+    try:
+        index.load_cache()
+    except Exception as e:
+        print(f"Error loading index from cache while querying term frequency: {e}")
+
+    return index.get_tf(doc_id, term)
 
 # ======== Pre-processing  ========
 
