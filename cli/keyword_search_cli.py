@@ -14,14 +14,17 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Keyword Search CLI")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
+    subparsers.add_parser("build", help="Build the inverted index")
+
     search_parser = subparsers.add_parser("search", help="Search movies using BM25")
     search_parser.add_argument("query", type=str, help="Search query")
-    search_parser = subparsers.add_parser("build", help="Build index")
-    search_parser = subparsers.add_parser("tf", help="Get term frequency")
-    search_parser.add_argument("id", type=int, help="Document ID for term frequency")
-    search_parser.add_argument("term", type=str, help="Term to query term frequency")
-    search_parser = subparsers.add_parser("idf", help="Get inverted document frequency")
-    search_parser.add_argument("term", type=str, help="Term to query term frequency")
+
+    tf_parser = subparsers.add_parser("tf", help="Get term frequency")
+    tf_parser.add_argument("id", type=int, help="Document ID for term frequency")
+    tf_parser.add_argument("term", type=str, help="Term to query term frequency")
+
+    idf_parser = subparsers.add_parser("idf", help="Get inverted document frequency")
+    idf_parser.add_argument("term", type=str, help="Term to query term frequency")
 
     args = parser.parse_args()
 

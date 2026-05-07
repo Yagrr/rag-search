@@ -20,6 +20,7 @@ class InvertedIndex:
         self.index = defaultdict(set)
         self.docmap: dict[int, dict] = {}
         self.term_frequencies = defaultdict(Counter)
+
         self.path_index = os.path.join(PATH_CACHE, "index.pkl")
         self.path_docmap = os.path.join(PATH_CACHE, "docmap.pkl")
         self.path_term_frequencies = os.path.join(PATH_CACHE, "term_frequencies.pkl")
@@ -34,33 +35,6 @@ class InvertedIndex:
         for token in set(tokens):
             self.index[token].add(doc_id)
         return
-
-    def get_documents(self, term: str) -> list[int]:
-        """
-        Get the set of document IDs for a given token, and return them as a
-        list, sorted in ascending order.
-        Assuming that the input term is a single word or token.
-        """
-        doc_ids = self.index.get(term, set())
-        return sorted(list(doc_ids))
-
-    def get_tf(self, doc_id: int, term: str) -> int:
-        """
-        Get term frequencies for a given term and document_id in term_frequencies attribute.
-
-        Passes through term to tokenize_text() for preprocessing, and stemming.
-        Raise value error if more than one token.
-        """
-        tokens = tokenize_text(term)
-        count = 0
-
-        if len(tokens) > 1:
-            raise ValueError(f"Error - input get_tf() term has more than one token: '{term}'")
-
-        for token in tokens:
-            count += self.term_frequencies[doc_id][token]
-
-        return count
 
 
     def build(self) -> None:
@@ -120,6 +94,29 @@ class InvertedIndex:
 
         except Exception as e:
             print(f"Error while loading: {e}")
+
+    def get_documents(self, term: str) -> list[int]:
+        """
+        Get the set of document IDs for a given token, and return them as a
+        list, sorted in ascending order.
+        Assuming that the input term is a single word or token.
+        """
+        doc_ids = self.index.get(term, set())
+        return sorted(list(doc_ids))
+
+    def get_tf(self, doc_id: int, term: str) -> int:
+        """
+        Get term frequencies for a given term and document_id in term_frequencies attribute.
+
+        Passes through term to tokenize_text() for preprocessing, and stemming.
+        Raise value error if more than one token.
+        """
+        tokens = tokenize_text(term)
+
+        if len(tokens) != 1:
+            raise ValueError(f"Error - term must be single token: '{term}'")
+
+        return self.term_frequencies[doc_id][tokens[0]]
 
 
 # ======== Main command  ========
