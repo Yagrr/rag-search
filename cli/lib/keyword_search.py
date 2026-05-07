@@ -124,6 +124,9 @@ class InvertedIndex:
         return self.term_frequencies[doc_id][tokens[0]]
 
     def get_idf(self, term: str) -> float:
+        """
+        Get the basic inverted document frequency (IDF) score for a given term.
+        """
         count_total_docs = len(self.docmap)
         count_docs_with_term = len(self.get_documents(term))
         idf =  math.log((count_total_docs + 1) / (count_docs_with_term + 1))
