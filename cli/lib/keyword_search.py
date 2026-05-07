@@ -121,8 +121,8 @@ class InvertedIndex:
 
     def get_idf(self, term: str) -> float:
         count_total_docs = len(self.docmap)
-        count_term_matching_doc = len(self.get_documents(term))
-        idf =  math.log((count_total_docs + 1) / (count_term_matching_doc + 1))
+        count_docs_with_term = len(self.get_documents(term))
+        idf =  math.log((count_total_docs + 1) / (count_docs_with_term + 1))
         return idf
     
     def get_tfidf(self, doc_id: int, term: str) -> float:
@@ -178,7 +178,7 @@ def command_tf(doc_id: int, term: str) -> int:
     try:
         index.load_cache()
     except Exception as e:
-        print(f"Error loading index from cache while querying term frequency: {e}")
+        print(f"Error loading inverted index from cache: {e}")
 
     return index.get_tf(doc_id, term)
 
@@ -188,10 +188,7 @@ def command_idf(term: str) -> float:
     try:
         index.load_cache()
     except Exception as e:
-        print(
-            f"Error loading index from cache while getting inverse document frequency: {e}"
-        )
-
+        print(f"Error loading inverted index from cache: {e}") 
     return index.get_idf(term)
 
 
@@ -200,7 +197,7 @@ def command_tfidf(doc_id: int, term: str):
     try:
         index.load_cache()
     except Exception as e:
-        print(f"Error loading index from cache while getting TF-IDF: {e}")
+        print(f"Error loading inverted index from cache: {e}")
 
     return index.get_tfidf(doc_id, term)
 
