@@ -21,15 +21,15 @@ def main() -> None:
     search_parser.add_argument("query", type=str, help="Search query")
 
     tf_parser = subparsers.add_parser("tf", help="Get term frequency")
-    tf_parser.add_argument("id", type=int, help="Document ID for term frequency")
+    tf_parser.add_argument("id", type=int, help="Document ID for term frequency (TF)")
     tf_parser.add_argument("term", type=str, help="Term to query term frequency")
 
-    idf_parser = subparsers.add_parser("idf", help="Get inverted document frequency")
-    idf_parser.add_argument("term", type=str, help="Term to query term frequency")
+    idf_parser = subparsers.add_parser("idf", help="Get inverted document frequency (IDF)")
+    idf_parser.add_argument("term", type=str, help="Term to query IDF score")
 
     tfidf_parser = subparsers.add_parser("tfidf", help="Get TF-IDF")
     tfidf_parser.add_argument("id", type=int, help="Document ID for TF-IDF")
-    tfidf_parser.add_argument("term", type=str, help="Term to obtain TF-IDF")
+    tfidf_parser.add_argument("term", type=str, help="Term to obtain TF-IDF score")
 
 
     args = parser.parse_args()
