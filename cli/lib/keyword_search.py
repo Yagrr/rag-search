@@ -1,4 +1,5 @@
 import os
+import math
 import pickle
 import string
 from collections import defaultdict, Counter
@@ -133,6 +134,11 @@ def command_build() -> None:
     
 
 def command_search(query: str, field_to_search: str = "title", limit: int = DEFAULT_SEARCH_LIMIT) -> list[dict]:
+    """
+    Command for querying words in cached inverted index data.
+    Takes a string query, and an integer limit for how many results should be fetched.
+    Returns a list of dictionary document objects.
+    """
     matches = []
     doc_ids = []
     index = InvertedIndex()
@@ -154,7 +160,11 @@ def command_search(query: str, field_to_search: str = "title", limit: int = DEFA
 
     return matches
 
-def command_tf(doc_id: int, term: str):
+def command_tf(doc_id: int, term: str) -> int:
+    """
+    Command for getting the term frequency for a given term in given document ID (doc_id).
+    Returns an integer count.
+    """
 
     index = InvertedIndex()
 
@@ -164,6 +174,21 @@ def command_tf(doc_id: int, term: str):
         print(f"Error loading index from cache while querying term frequency: {e}")
 
     return index.get_tf(doc_id, term)
+
+
+def command_idf(term: str) -> float:
+    index = InvertedIndex()
+
+    try:
+        index.load_cache()
+    except Exception as e:
+        print(f"Error loading index from cache while getting inverse document frequency: {e}")
+
+    count_total_docs = len(index.docmap)
+    count_term_matching_doc = len(index.get_documents(term))
+
+    idf =  math.log((count_total_docs + 1) / (count_term_matching_doc + 1))
+    return idf
 
 # ======== Pre-processing  ========
 

@@ -4,6 +4,7 @@ from lib.keyword_search import (
     command_search, 
     command_build, 
     command_tf,
+    command_idf,
 )
 
 
@@ -18,7 +19,9 @@ def main() -> None:
     search_parser = subparsers.add_parser("build", help="Build index")
     search_parser = subparsers.add_parser("tf", help="Get term frequency")
     search_parser.add_argument("id", type=int, help="Document ID for term frequency")
-    search_parser.add_argument("term", type=str, help="Term to query frequency")
+    search_parser.add_argument("term", type=str, help="Term to query term frequency")
+    search_parser = subparsers.add_parser("idf", help="Get inverted document frequency")
+    search_parser.add_argument("term", type=str, help="Term to query term frequency")
 
     args = parser.parse_args()
 
@@ -38,6 +41,13 @@ def main() -> None:
             print("Term frequency")
             count = command_tf(args.id, args.term)
             print(f"(ID: {args.id}) {args.term}: {count}")
+
+        case "idf":
+            print("Inverted Document Frequency")
+            idf = command_idf(args.term)
+            print(f"Inverse document frequency of '{args.term}': {idf:.2f}")
+
+            pass
 
         case "build":
             print("Building inverted index...")
