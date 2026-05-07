@@ -127,11 +127,27 @@ class InvertedIndex:
         """
         Get the basic inverted document frequency (IDF) score for a given term.
         """
+
         count_total_docs = len(self.docmap)
         count_docs_with_term = len(self.get_documents(term))
         idf =  math.log((count_total_docs + 1) / (count_docs_with_term + 1))
         return idf
-    
+
+    def get_bm25_idf(self, term: str) -> float:
+        """
+        Get the inverted document frequency (BM25 IDF) score for a given term using
+        the Okapi BM25 algorithm.
+        """
+        count_total_docs = len(self.docmap)
+        count_docs_with_term = len(self.get_documents(term))
+        laplace_smoothing = 0.5
+        bm25_idf = math.log(
+            (count_total_docs - count_docs_with_term + laplace_smoothing)
+            / (count_docs_with_term + laplace_smoothing) 
+            + 1
+        )
+        return bm25_idf
+
     def get_tfidf(self, doc_id: int, term: str) -> float:
         tfidf = self.get_tf(doc_id, term) * self.get_idf(term)
         return tfidf
@@ -197,6 +213,16 @@ def command_idf(term: str) -> float:
     except Exception as e:
         print(f"Error loading inverted index from cache: {e}") 
     return index.get_idf(term)
+
+
+def command_bm25_idf(term: str) -> float:
+    index = InvertedIndex()
+    try:
+        index.load_cache()
+    except Exception as e:
+        print( f"Error loading inverted index from cache: {e}")
+
+    return index.get_bm25_idf(term)
 
 
 def command_tfidf(doc_id: int, term: str):

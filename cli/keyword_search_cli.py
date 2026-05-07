@@ -6,6 +6,7 @@ from lib.keyword_search import (
     command_tf,
     command_idf,
     command_tfidf,
+    command_bm25_idf,
 )
 
 
@@ -30,6 +31,9 @@ def main() -> None:
     tfidf_parser = subparsers.add_parser("tfidf", help="Get TF-IDF")
     tfidf_parser.add_argument("id", type=int, help="Document ID for TF-IDF")
     tfidf_parser.add_argument("term", type=str, help="Term to obtain TF-IDF score")
+
+    bm25idf_parser = subparsers.add_parser("bm25idf", help="Get BM25 IDF")
+    bm25idf_parser.add_argument("term", type=str, help="Term to obtain BM25 IDF score")
 
 
     args = parser.parse_args()
@@ -57,6 +61,10 @@ def main() -> None:
         case "tfidf":
             tfidf = command_tfidf(args.id, args.term)
             print(f"TF-IDF score of '{args.term}' in document '{args.id}': {tfidf:.2f}'")
+
+        case "bm25idf":
+            bm25_idf = command_bm25_idf(args.term)
+            print(f"BM25 IDF score of '{args.term}': {bm25_idf:.2f}")
 
         case "build":
             print("Building inverted index...")
