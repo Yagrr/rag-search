@@ -6,8 +6,11 @@ from lib.keyword_search import (
     command_tf,
     command_idf,
     command_tfidf,
+    command_bm25_tf,
     command_bm25_idf,
 )
+
+from lib.utils_search import BM25_K1, BM25_B
 
 
 def main() -> None:
@@ -35,6 +38,11 @@ def main() -> None:
     bm25idf_parser = subparsers.add_parser("bm25idf", help="Get BM25 IDF")
     bm25idf_parser.add_argument("term", type=str, help="Term to obtain BM25 IDF score")
 
+    bm25tf_parser = subparsers.add_parser("bm25tf", help="Get BM25 TF score for a given document and term")
+    bm25tf_parser.add_argument("id", type=int, help="Document ID for BM25 term frequency (BM25 TF)")
+    bm25tf_parser.add_argument("term", type=str, help="Term to query BM25 term frequency")
+    bm25tf_parser.add_argument("k1", type=float, nargs='?', default=BM25_K1, help="Tunable BM25 K1 parameter")
+    bm25tf_parser.add_argument("b", type=float, nargs='?', default=BM25_B, help="Tunable BM25 B parameter")
 
     args = parser.parse_args()
 
@@ -61,6 +69,10 @@ def main() -> None:
         case "tfidf":
             tfidf = command_tfidf(args.id, args.term)
             print(f"TF-IDF score of '{args.term}' in document '{args.id}': {tfidf:.2f}'")
+
+        case "bm25tf":
+            bm25_tf = command_bm25_tf(args.id, args.term, args.k1)
+            print(f"BM25 TF score of '{args.term}' in document '{args.id}': {bm25_tf:.2f}")
 
         case "bm25idf":
             bm25_idf = command_bm25_idf(args.term)

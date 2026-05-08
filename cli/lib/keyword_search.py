@@ -7,6 +7,8 @@ from collections import defaultdict, Counter
 from nltk.stem import PorterStemmer
 
 from .utils_search import (
+    BM25_K1,
+    BM25_B,
     PATH_CACHE, 
     DEFAULT_SEARCH_LIMIT, 
     load_stopwords, 
@@ -20,16 +22,23 @@ class InvertedIndex:
         self.index = defaultdict(set)
         self.docmap: dict[int, dict] = {}
         self.term_frequencies = defaultdict(Counter)
+        self.doc_lengths: dict = {}
 
         self.path_index = os.path.join(PATH_CACHE, "index.pkl")
         self.path_docmap = os.path.join(PATH_CACHE, "docmap.pkl")
         self.path_term_frequencies = os.path.join(PATH_CACHE, "term_frequencies.pkl")
+        self.path_doc_lengths = os.path.join(PATH_CACHE, "doc_lengths.pkl")
 
     def __add_document(self, doc_id: int, text: str) -> None:
         """
         Tokenize the input text, then add each token to the index with the document ID
         """
         tokens = tokenize_text(text)
+
+        total_tokens = len(tokens)
+
+        self.doc_lengths[doc_id] = total_tokens
+
         for token in tokens:
             self.term_frequencies[doc_id][token] += 1
         for token in set(tokens):
@@ -71,6 +80,8 @@ class InvertedIndex:
                 pickle.dump(self.docmap, file)
             with open(self.path_term_frequencies, "wb") as file:
                 pickle.dump(self.term_frequencies, file)
+            with open(self.path_doc_lengths, "wb") as file:
+                pickle.dump(self.doc_lengths, file)
         except Exception as e:
             print(f"Error while saving: {e}")
 
@@ -87,10 +98,13 @@ class InvertedIndex:
                 docmap = pickle.load(file_docmap)
             with open(self.path_term_frequencies, "rb") as file_tf:
                 term_frequencies = pickle.load(file_tf)
+            with open(self.path_doc_lengths, "rb") as file_doc_lengths:
+                doc_lengths = pickle.load(file_doc_lengths)
 
             self.index = index
             self.docmap = docmap
             self.term_frequencies = term_frequencies
+            self.doc_lengths = doc_lengths
 
         except Exception as e:
             print(f"Error while loading: {e}")
@@ -133,6 +147,41 @@ class InvertedIndex:
         idf =  math.log((count_total_docs + 1) / (count_docs_with_term + 1))
         return idf
 
+    def get_tfidf(self, doc_id: int, term: str) -> float:
+        tfidf = self.get_tf(doc_id, term) * self.get_idf(term)
+        return tfidf
+
+    def __get_avg_doc_length(self) -> float:
+
+        length_all_documents = sum(self.doc_lengths.values())
+        number_of_documents = len(self.doc_lengths)
+
+        if number_of_documents == 0:
+            return 0.0
+        else:
+            return length_all_documents / number_of_documents
+
+    def get_bm25_tf(self, doc_id: int, term: str, k1: float = BM25_K1, b: float = BM25_B) -> float:
+        """
+        Get BM25 saturated term frequency for a given term and doc_id. Serves
+        as an updated version from standard TF to avoid high scoring words that
+        appear frequently.
+
+        Passes through term to tokenize_text() for preprocessing, and stemming.
+        Raise value error if more than one token.
+        """
+        tokens = tokenize_text(term)
+
+        doc_length = self.doc_lengths[doc_id]
+        avg_doc_length = self.__get_avg_doc_length()
+        length_norm = 1 - b + b * (doc_length / avg_doc_length)
+
+        if len(tokens) != 1:
+            raise ValueError(f"Error - term must be single token: '{term}'")
+
+        tf = self.term_frequencies[doc_id][tokens[0]]
+        return (tf * (k1 + 1)) / (tf + k1 * length_norm)
+
     def get_bm25_idf(self, term: str) -> float:
         """
         Get the inverted document frequency (BM25 IDF) score for a given term using
@@ -148,10 +197,6 @@ class InvertedIndex:
         )
         return bm25_idf
 
-    def get_tfidf(self, doc_id: int, term: str) -> float:
-        tfidf = self.get_tf(doc_id, term) * self.get_idf(term)
-        return tfidf
-
 
 # ======== Main command  ========
 
@@ -162,6 +207,7 @@ def command_build() -> None:
     print(f"Save index.pkl to disk at : {index.path_index}")
     print(f"Save docmap.pkl to disk at : {index.path_docmap}")
     print(f"Save term_frequencies.pkl to disk at : {index.path_term_frequencies}")
+    print(f"Save path_lenghts.pkl to disk at : {index.path_doc_lengths}")
     
 
 def command_search(query: str, field_to_search: str = "title", limit: int = DEFAULT_SEARCH_LIMIT) -> list[dict]:
@@ -215,16 +261,6 @@ def command_idf(term: str) -> float:
     return index.get_idf(term)
 
 
-def command_bm25_idf(term: str) -> float:
-    index = InvertedIndex()
-    try:
-        index.load_cache()
-    except Exception as e:
-        print( f"Error loading inverted index from cache: {e}")
-
-    return index.get_bm25_idf(term)
-
-
 def command_tfidf(doc_id: int, term: str):
     index = InvertedIndex()
     try:
@@ -234,6 +270,27 @@ def command_tfidf(doc_id: int, term: str):
 
     return index.get_tfidf(doc_id, term)
 
+def command_bm25_tf(doc_id: int, term: str, k1: float) -> float:
+    """
+    Command for getting the term frequency for a given term in given document
+    ID (doc_id). Returns an integer count.
+    """
+    index = InvertedIndex()
+    try:
+        index.load_cache()
+    except Exception as e:
+        print(f"Error loading inverted index from cache: {e}")
+
+    return index.get_bm25_tf(doc_id, term, k1)
+
+def command_bm25_idf(term: str) -> float:
+    index = InvertedIndex()
+    try:
+        index.load_cache()
+    except Exception as e:
+        print( f"Error loading inverted index from cache: {e}")
+
+    return index.get_bm25_idf(term)
 
 # ======== Pre-processing  ========
 
