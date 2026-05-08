@@ -148,6 +148,9 @@ class InvertedIndex:
         return idf
 
     def get_tfidf(self, doc_id: int, term: str) -> float:
+        Get the TF-IDF score for a given document and term.
+        Calculated with `TF-ID = TF * IDF`
+        """
         tfidf = self.get_tf(doc_id, term) * self.get_idf(term)
         return tfidf
 
