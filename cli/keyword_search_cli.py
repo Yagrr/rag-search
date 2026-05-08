@@ -6,11 +6,12 @@ from lib.keyword_search import (
     command_tf,
     command_idf,
     command_tfidf,
+    command_bm25_search,
     command_bm25_tf,
     command_bm25_idf,
 )
 
-from lib.utils_search import BM25_K1, BM25_B
+from lib.utils_search import BM25_K1, BM25_B, DEFAULT_SEARCH_LIMIT
 
 
 def main() -> None:
@@ -23,6 +24,7 @@ def main() -> None:
 
     search_parser = subparsers.add_parser("search", help="Search movies using BM25")
     search_parser.add_argument("query", type=str, help="Search query")
+    search_parser.add_argument("--limit", type=int, nargs='?', default=DEFAULT_SEARCH_LIMIT, help="Search query")
 
     tf_parser = subparsers.add_parser("tf", help="Get term frequency")
     tf_parser.add_argument("id", type=int, help="Document ID for term frequency (TF)")
@@ -44,6 +46,10 @@ def main() -> None:
     bm25tf_parser.add_argument("k1", type=float, nargs='?', default=BM25_K1, help="Tunable BM25 K1 parameter")
     bm25tf_parser.add_argument("b", type=float, nargs='?', default=BM25_B, help="Tunable BM25 B parameter")
 
+    bm25search_parser = subparsers.add_parser("bm25search", help="Search movies using full BM25 scoring")
+    bm25search_parser.add_argument("query", type=str, help="Search query")
+    bm25search_parser.add_argument("--limit", type=int, nargs='?', default=DEFAULT_SEARCH_LIMIT, help="Search query")
+
     args = parser.parse_args()
 
     # ======== Search ========
@@ -52,11 +58,11 @@ def main() -> None:
         case "search":
             # print the search query here
             print(f"Searching for: {args.query}")
-            results = command_search(args.query)
-            if not results:
-                print("No results found")
-            for i, res in enumerate(results, 1):
-                print(f"{i}. ({res['id']}) {res['title']}")
+            docs_matching = command_search(args.query)
+            if not docs_matching:
+                print("No results found.")
+            for i, doc in enumerate(docs_matching, 1):
+                print(f"{i}. ({doc['id']}) {doc['title']}")
 
         case "tf":
             count = command_tf(args.id, args.term)
@@ -69,6 +75,15 @@ def main() -> None:
         case "tfidf":
             tfidf = command_tfidf(args.id, args.term)
             print(f"TF-IDF score of '{args.term}' in document '{args.id}': {tfidf:.2f}'")
+
+        case "bm25search":
+            print("BM25 Search:")
+            docs_bm25_matching, scores_bm25 = command_bm25_search(args.query, args.limit)
+            if not scores_bm25:
+                print("No results found.")
+            for i, doc in enumerate(docs_bm25_matching, 1):
+                id = doc['id']
+                print(f"{i}. ({id}) {doc['title']} - Score: {scores_bm25[id]:.2f}")
 
         case "bm25tf":
             bm25_tf = command_bm25_tf(args.id, args.term, args.k1)

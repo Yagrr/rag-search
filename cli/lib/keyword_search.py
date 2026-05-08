@@ -19,7 +19,9 @@ from .utils_search import (
 # ======== Inverted Index ========
 class InvertedIndex:
     def __init__(self) -> None:
+        # Index of token to document object
         self.index = defaultdict(set)
+
         self.docmap: dict[int, dict] = {}
         self.term_frequencies = defaultdict(Counter)
         self.doc_lengths: dict = {}
@@ -148,6 +150,7 @@ class InvertedIndex:
         return idf
 
     def get_tfidf(self, doc_id: int, term: str) -> float:
+        """
         Get the TF-IDF score for a given document and term.
         Calculated with `TF-ID = TF * IDF`
         """
@@ -199,9 +202,52 @@ class InvertedIndex:
             + 1
         )
         return bm25_idf
+    
+    def get_bm25(self, doc_id: int, term: str) -> float:
+        bm25_tf = self.get_bm25_tf(doc_id, term)
+        bm25_idf = self.get_bm25_idf(term)
+        return bm25_tf * bm25_idf
+
+    def search_bm25(self, query: str, limit: int = DEFAULT_SEARCH_LIMIT) -> dict[int, float]:
+        """
+        Returns doc_id and its BM25 score given an input query.
+        
+        Tokenizes query, calculates the BM25 score for each token for each
+        indexed doc_id and appends its score and ID to a scores dictionary.
+        Sort scores dictionary to find the top most relevant document, then
+        return the top `limit` documents along with their scores.
+        """
+        tokens = tokenize_text(query)
+        scores: dict[int, float] = {}
+        results = []
+
+        for doc_id in self.docmap.keys():
+            doc_id_total_bm25 = 0
+            for token in tokens:
+                bm25 = self.get_bm25(doc_id, token)
+                doc_id_total_bm25 += bm25
+            scores[doc_id] = doc_id_total_bm25
+
+        scores_sorted_desc = dict(sorted(scores.items(), key=lambda item: item[1], reverse=True))
+
+        for score in scores_sorted_desc.items():
+            results.append(score)
+            if len(results) >= limit:
+                break
+
+        return dict(results)
 
 
 # ======== Main command  ========
+
+def create_InvertedIndex() -> InvertedIndex:
+    index = InvertedIndex()
+    try:
+        index.load_cache()
+    except Exception as e:
+        print(f"Error loading index from cache while searching: {e}")
+    return index
+
 
 def command_build() -> None:
     index = InvertedIndex()
@@ -221,12 +267,7 @@ def command_search(query: str, field_to_search: str = "title", limit: int = DEFA
     """
     matches = []
     doc_ids = []
-    index = InvertedIndex()
-
-    try:
-        index.load_cache()
-    except Exception as e:
-        print(f"Error loading index from cache while searching: {e}")
+    index = create_InvertedIndex()
 
     tokens_query: list[str] = tokenize_text(query)
 
@@ -242,58 +283,36 @@ def command_search(query: str, field_to_search: str = "title", limit: int = DEFA
 
 
 def command_tf(doc_id: int, term: str) -> int:
-    """
-    Command for getting the term frequency for a given term in given document
-    ID (doc_id). Returns an integer count.
-    """
-    index = InvertedIndex()
-    try:
-        index.load_cache()
-    except Exception as e:
-        print(f"Error loading inverted index from cache: {e}")
-
+    index = create_InvertedIndex()
     return index.get_tf(doc_id, term)
 
 
 def command_idf(term: str) -> float:
-    index = InvertedIndex()
-    try:
-        index.load_cache()
-    except Exception as e:
-        print(f"Error loading inverted index from cache: {e}") 
+    index = create_InvertedIndex()
     return index.get_idf(term)
 
 
 def command_tfidf(doc_id: int, term: str):
-    index = InvertedIndex()
-    try:
-        index.load_cache()
-    except Exception as e:
-        print(f"Error loading inverted index from cache: {e}")
-
+    index = create_InvertedIndex()
     return index.get_tfidf(doc_id, term)
 
 def command_bm25_tf(doc_id: int, term: str, k1: float) -> float:
-    """
-    Command for getting the term frequency for a given term in given document
-    ID (doc_id). Returns an integer count.
-    """
-    index = InvertedIndex()
-    try:
-        index.load_cache()
-    except Exception as e:
-        print(f"Error loading inverted index from cache: {e}")
-
+    index = create_InvertedIndex()
     return index.get_bm25_tf(doc_id, term, k1)
 
 def command_bm25_idf(term: str) -> float:
-    index = InvertedIndex()
-    try:
-        index.load_cache()
-    except Exception as e:
-        print( f"Error loading inverted index from cache: {e}")
-
+    index = create_InvertedIndex()
     return index.get_bm25_idf(term)
+
+def command_bm25_search(query: str, limit: int) -> tuple[list[dict],  dict[int, float]]:
+    matches = []
+    index = create_InvertedIndex()
+    scores = index.search_bm25(query, limit) 
+
+    for id in scores.keys():
+        matches.append(index.docmap[id])
+
+    return matches, scores
 
 # ======== Pre-processing  ========
 
