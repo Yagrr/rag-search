@@ -15,8 +15,7 @@ class SemanticSearch:
     def generate_embedding(self, text: str):
         if text.isspace() or text == "":
             raise ValueError(f"Text is whitespace or is empty string '{text}'")
-        embedding = self.model.encode([text])
-        return embedding[0]
+        return self.model.encode([text])[0]
 
     def build_embeddings(self, documents: list[dict]):
         self.documents = documents
@@ -66,3 +65,10 @@ def embed_text(text):
     print(f"Text: {text}")
     print(f"First 3 dimensions: {embedding[:3]}")
     print(f"Dimensions: {embedding.shape[0]}")
+
+def embed_query_text(query: str):
+    search_instance = SemanticSearch()
+    embedding = search_instance.generate_embedding(query)
+    print(f"Query: {query}")
+    print(f"First 3 dimensions: {embedding[:3]}")
+    print(f"Shape: {embedding.shape}")

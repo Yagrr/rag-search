@@ -2,7 +2,13 @@
 
 import argparse
 
-from lib.semantic_search import verify_model, verify_embedding, embed_text
+from lib.semantic_search import (
+    verify_model,
+    verify_embedding,
+    embed_text,
+    embed_query_text,
+)
+
 
 def main():
 
@@ -15,9 +21,11 @@ def main():
 
     subparsers.add_parser("verify_embeddings", help="Verify if embeddings are available")
 
-    embed_parser = subparsers.add_parser("embed_text", help="Embed text to vector space using an embedding model (default: all-MiniLM-L6-v2)")
-    embed_parser.add_argument("text", type=str, help="Text to embed")
+    single_embed_parser = subparsers.add_parser("embed_text", help="Embed text to vector space using an embedding model (default: all-MiniLM-L6-v2)")
+    single_embed_parser.add_argument("text", type=str, help="Text to embed")
 
+    embed_query_parser = subparsers.add_parser("embed_query", help="Embed query to vector space using an embedding model (default: all-MiniLM-L6-v2)")
+    embed_query_parser.add_argument("query", type=str, help="Query to embed")
 
     args = parser.parse_args()
 
@@ -34,8 +42,14 @@ def main():
             print("Embedding text...")
             embed_text(args.text)
 
+        case "embed_query":
+            print("Embedding query...")
+            embed_query_text(args.query)
+            pass
+
         case _:
             parser.print_help()
+
 
 if __name__ == "__main__":
     main()
