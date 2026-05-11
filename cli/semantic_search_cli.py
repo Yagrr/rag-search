@@ -7,6 +7,18 @@ from lib.semantic_search import (
     verify_embedding,
     embed_text,
     embed_query_text,
+    command_semantic_search,
+    chunk_text,
+    chunk_text_semantically,
+)
+
+from lib.utils_search import (
+    DEFAULT_MODEL,
+    DEFAULT_SEARCH_LIMIT,
+    DEFAULT_CHUNK_SIZE,
+    DEFAULT_CHUNK_WORDS_OVERLAP,
+    DEFAULT_SEMANTIC_CHUNK_SIZE,
+    DEFAULT_SEMANTIC_CHUNK_OVERLAP,
 )
 
 
@@ -17,7 +29,7 @@ def main():
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     model_parser = subparsers.add_parser("verify", help="Verify if model is loaded")
-    model_parser.add_argument("--model", type=str, default="all-MiniLM-L6-v2", help="Search query")
+    model_parser.add_argument("--model", type=str, default=DEFAULT_MODEL, help="Search query")
 
     subparsers.add_parser("verify_embeddings", help="Verify if embeddings are available")
 
@@ -26,6 +38,21 @@ def main():
 
     embed_query_parser = subparsers.add_parser("embed_query", help="Embed query to vector space using an embedding model (default: all-MiniLM-L6-v2)")
     embed_query_parser.add_argument("query", type=str, help="Query to embed")
+
+    search_parser = subparsers.add_parser("search", help="Semantically search movies")
+    search_parser.add_argument("query", type=str, help="Query to search")
+    search_parser.add_argument("--limit", type=int, default=DEFAULT_SEARCH_LIMIT, help="Limit search results")
+
+    chunk_parser = subparsers.add_parser("chunk", help="Split long text data into smaller fixed-size pieces for embedding")
+    chunk_parser.add_argument("text", type=str, help="Text to chunk")
+    chunk_parser.add_argument("--chunk-size", type=int, default=DEFAULT_CHUNK_SIZE, help="Set default word limit in each chunk")
+    chunk_parser.add_argument("--overlap", type=int, default=DEFAULT_CHUNK_WORDS_OVERLAP, help="Set number of overlapping words to preserve context across chunks")
+
+    semantic_chunk_parser = subparsers.add_parser("semantic_chunk", help="Split long text data semantically into smaller context-aware pieces for embedding")
+    semantic_chunk_parser.add_argument("text", type=str, help="Text to semantically chunk")
+    semantic_chunk_parser.add_argument("--max-chunk-size", type=int, default=DEFAULT_SEMANTIC_CHUNK_SIZE, help="Set maximum word limit in each chunk")
+    semantic_chunk_parser.add_argument("--overlap", type=int, default=DEFAULT_SEMANTIC_CHUNK_OVERLAP, help="Set number of overlapping words to preserve further context across semantically-split chunks")
+
 
     args = parser.parse_args()
 
@@ -45,7 +72,18 @@ def main():
         case "embed_query":
             print("Embedding query...")
             embed_query_text(args.query)
-            pass
+
+        case "chunk":
+            print("Chunking text...")
+            chunk_text(args.text, args.chunk_size, args.overlap)
+
+        case "semantic_chunk":
+            print("Semantically chunking text...")
+            chunk_text_semantically(args.text, args.max_chunk_size, args.overlap)
+
+        case "search":
+            print("Starting semantic search...")
+            command_semantic_search(args.query, args.limit)
 
         case _:
             parser.print_help()
