@@ -1,5 +1,6 @@
 import os
 import re
+import json
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
@@ -31,7 +32,7 @@ class SemanticSearch:
 
     def build_embeddings(self, documents: list[dict]):
         self.documents = documents
-        docs_str = []
+        docs_str: list[str] = []
 
         for doc in documents:
             self.document_map[doc["id"]] = doc
@@ -44,7 +45,6 @@ class SemanticSearch:
 
     def load_or_create_embeddings(self, documents: list[dict]):
         self.documents = documents
-
         for doc in documents:
             self.document_map[doc["id"]] = doc
 
@@ -54,7 +54,7 @@ class SemanticSearch:
             if len(self.embeddings) == len(documents):
                 return self.embeddings
 
-        self.build_embeddings(documents)
+        return self.build_embeddings(documents)
 
     def search(self, query: str, limit: int = DEFAULT_SEARCH_LIMIT):
         if self.embeddings is None or self.documents is None:
@@ -81,6 +81,69 @@ class SemanticSearch:
                 break
         return results
 
+
+class ChunkedSemanticSearch(SemanticSearch):
+    def __init__(self, model_name = DEFAULT_MODEL) -> None:
+        super().__init__(model_name)
+        self.chunk_embeddings = None
+        self.chunk_metadata = None
+        self.path_chunk_embeddings = os.path.join(PATH_CACHE, "chunk_embeddings.npy")
+        self.path_chunk_metadata = os.path.join(PATH_CACHE, "chunk_metadata.json")
+
+    def build_chunk_embeddings(self, documents: list[dict]):
+        self.documents = documents
+        all_chunks: list[list[str]] = []
+        all_chunk_metadata: list[dict] = []
+
+        for doc in documents:
+            self.document_map[doc["id"]] = doc
+            
+        for idx, doc in enumerate(documents):
+            if not doc["description"]:
+                continue
+
+            doc_chunks = chunking_semantic(
+                doc["description"],
+                max_chunk_size=4,
+                overlap=1,
+            )
+
+            all_chunks.append(doc_chunks)
+
+            for chunk_idx in range(0, len(doc_chunks)):
+                all_chunk_metadata.append(
+                    {
+                        "movie_idx": idx,
+                        "chunk_idx": chunk_idx,
+                        "total_chunks": len(doc_chunks),
+                    }
+                )
+
+        self.chunk_embeddings = self.model.encode(all_chunks, show_progress_bar = True)
+        self.chunk_metadata = all_chunk_metadata
+
+        np.save(self.path_chunk_embeddings, self.chunk_embeddings)
+
+        with open(self.path_chunk_metadata, "w") as f:
+            json.dump({"chunks": all_chunk_metadata, "total_chunks": len(all_chunks)}, f, indent=2)
+
+        return self.chunk_embeddings
+
+    def load_or_create_chunk_embeddings(self, documents: list[dict]) -> np.ndarray:
+        self.documents = documents
+        self.documents_map = {}
+        for doc in documents:
+            self.document_map[doc["id"]] = doc
+
+        if os.path.exists(self.path_chunk_embeddings) and os.path.exists(self.path_chunk_metadata):
+            self.chunk_embeddings = np.load(self.path_chunk_embeddings)
+            with open(self.path_chunk_metadata, "r") as f:
+                self.chunk_metadata = json.load(f)
+            return self.chunk_embeddings
+
+        return self.build_chunk_embeddings(documents)
+
+
 def command_semantic_search(query: str, limit: int):
     search_instance = SemanticSearch()
     documents = list(load_movies())
@@ -104,7 +167,7 @@ def cosine_similarity(vec1, vec2):
     # Magnitudes
     norm1 = np.linalg.norm(vec1)
     norm2 = np.linalg.norm(vec2)
-    
+
     if norm1 == 0 or norm2 == 0:
         return 0.0
     return dot_product / (norm1 * norm2)
@@ -189,3 +252,9 @@ def chunk_text_semantically(text: str, max_chunk_size: int = DEFAULT_SEMANTIC_CH
     print(f"Semantically chunking {len(text)} characters")
     for i, chunk in enumerate(chunks):
         print(f"{i + 1}. {chunk}")
+
+def embed_chunks():
+    embed_instance = ChunkedSemanticSearch()
+    documents = list(load_movies())
+    embeddings = embed_instance.load_or_create_chunk_embeddings(documents)
+    print(f"Generated {len(embeddings)} chunked embeddings")
