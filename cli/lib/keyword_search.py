@@ -213,7 +213,7 @@ class InvertedIndex:
         Returns doc_id and its BM25 score given an input query.
         
         Tokenizes query, calculates the BM25 score for each token for each
-        indexed doc_id and appends its score and ID to a scores dictionary.
+        indexed doc_id and appends its score and document ID to a scores dictionary.
         Sort scores dictionary to find the top most relevant document, then
         return the top `limit` documents along with their scores.
         """
