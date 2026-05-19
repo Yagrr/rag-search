@@ -9,17 +9,20 @@ PATH_CACHE = os.path.join(PROJECT_ROOT, "cache")
 
 DEFAULT_MODEL = "all-MiniLM-L6-v2"
 DEFAULT_SEARCH_LIMIT = 5
+
 DEFAULT_CHUNK_SIZE = 200
 DEFAULT_CHUNK_WORDS_OVERLAP = 2
 
 DEFAULT_SEMANTIC_CHUNK_SIZE = 4
 DEFAULT_SEMANTIC_CHUNK_OVERLAP = 1
-SCORE_PRECISION = 6
+SCORE_PRECISION = 4
 
 # controls TF value saturation
 BM25_K1 = 1.5
 # controls saturation effect in length normalization
 BM25_B = 0.75
+
+DEFAULT_WEIGHTED_SEARCH_ALPHA = 0.5
 
 def load_movies() -> dict:
     with open(PATH_DATA, "r") as file:
