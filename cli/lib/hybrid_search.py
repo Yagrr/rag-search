@@ -7,6 +7,7 @@ from .utils_search import (
     DEFAULT_SEARCH_LIMIT,
     SCORE_PRECISION,
     DEFAULT_WEIGHTED_SEARCH_ALPHA,
+    DEFAULT_RRF_SEARCH_K,
 )
 
 class HybridSearch:
@@ -95,8 +96,72 @@ class HybridSearch:
         
         return res_hybrid_sorted
 
-    def rrf_search(self, query, k, limit=10):
-        raise NotImplementedError("RRF hybrid search is not implemented yet.")
+    def rrf_search(self, query, k: int = DEFAULT_RRF_SEARCH_K, limit: int = DEFAULT_SEARCH_LIMIT):
+        res_bm25_raw = self._bm25_search(query, limit * 500) 
+        res_bm25 = {id - 1 : score for id, score in res_bm25_raw.items()}
+        res_semantic = self.semantic_search.search_chunks(query, limit * 500)
+
+        scores_bm25 = list(res_bm25.values())
+        scores_semantic = [doc["score"] for doc in res_semantic]
+
+        # Normalize takes in a list as input and returns a list as output.
+        scores_bm25_norm = normalize(scores_bm25)
+        scores_semantic_norm = normalize(scores_semantic)
+
+        
+        # map values back to ID
+        for id, bm25_norm in zip(res_bm25, scores_bm25_norm):
+            res_bm25.update({id: bm25_norm})
+
+        for i in range(len(res_semantic)):
+            res_semantic[i].update({"score": scores_semantic_norm[i]})
+
+        # map ID to (title, document, semantic, bm25, hybrid)
+        res_hybrid = {}
+        for i, id in enumerate(res_bm25, 1):
+            title = self.documents[id]["title"]
+            document = self.documents[id]["description"][:100]
+            res_hybrid.update(
+                {
+                    id: {
+                        "title": title,
+                        "document": document,
+                        "rank_bm25": i,
+                        "rank_semantic": 0,
+                    }
+                }
+            )
+
+        for i, doc in enumerate(res_semantic, 1):
+            id = doc["id"]
+            title = self.documents[id]["title"]
+            document = self.documents[id]["description"][:100]
+            if id not in res_hybrid:
+                res_hybrid.update({id: {
+                    "title": title,
+                    "document": document,
+                    "rank_bm25": 0,
+                }})
+
+            res_hybrid[id].update({
+                "rank_semantic": i
+            })
+
+        for id in res_hybrid:
+            rank_bm25 = res_hybrid[id]["rank_bm25"]
+            rank_semantic = res_hybrid[id]["rank_semantic"]
+            res_hybrid[id].update({
+                "rrf_score": rrf_score(rank_bm25, k) + rrf_score(rank_semantic, k)
+            })
+
+        # Sort by hybrid score descending, get results up to limit.
+        res_semantic_sorted = dict(
+            sorted(
+                res_hybrid.items(), key=lambda item: item[1].get("rrf_score"), reverse=True
+            )[:limit]
+        )
+        
+        return res_semantic_sorted
 
 def normalize(values: list[float]) -> list[float]:
     if not values:
@@ -118,7 +183,10 @@ def normalize(values: list[float]) -> list[float]:
 def hybrid_score(bm25_score: float, semantic_score: float, alpha: float = DEFAULT_WEIGHTED_SEARCH_ALPHA) -> float:
     return alpha * bm25_score + (1 - alpha) * semantic_score
 
-def command_weighted_search(query: str, alpha: float, limit: int) -> None:
+def rrf_score(rank, k=DEFAULT_RRF_SEARCH_K) -> float:
+    return (1 / (k + rank))
+
+def command_weighted_search(query: str, alpha: float, limit: int = DEFAULT_SEARCH_LIMIT) -> None:
     documents = load_movies()
     search_instance = HybridSearch(documents)
     results = search_instance.weighted_search(query, alpha, limit)
@@ -126,4 +194,14 @@ def command_weighted_search(query: str, alpha: float, limit: int) -> None:
         print(f"{i+1}. {res["title"]}")
         print(f" Hybrid Score: {res["hybrid"]: .4f}")
         print(f" BM25: {res["bm25"]: .4f}, Semantic: {res["semantic"]: .4f}")
+        print(f" {res["document"]}")
+
+def command_rrf_search(query: str, k: int = DEFAULT_RRF_SEARCH_K, limit: int = DEFAULT_SEARCH_LIMIT) -> None:
+    documents = load_movies()
+    search_instance = HybridSearch(documents)
+    results = search_instance.rrf_search(query, k, limit)
+    for i, res in enumerate(results.values()):
+        print(f"{i+1}. {res["title"]}")
+        print(f" RRF Score: {res["rrf_score"]: .4f}")
+        print(f" BM25 Rank: {res["rank_bm25"]}, Semantic Rank: {res["rank_semantic"]}")
         print(f" {res["document"]}")

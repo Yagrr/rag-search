@@ -24,6 +24,8 @@ BM25_B = 0.75
 
 DEFAULT_WEIGHTED_SEARCH_ALPHA = 0.5
 
+DEFAULT_RRF_SEARCH_K = 60
+
 def load_movies() -> dict:
     with open(PATH_DATA, "r") as file:
         data = json.load(file)
