@@ -167,8 +167,20 @@ def chunk_text(text: str, chunk_size:int = DEFAULT_CHUNK_SIZE, overlap: int = DE
     for i, chunk in enumerate(chunks):
         print(f"{i + 1}. {chunk}")
 
+
+def preprocess_text(chunk: str) -> list[str]:
+    sentences = chunk.strip().split()
+    if not sentences:
+        return []
+    if len(sentences) == 1 and sentences[-1] not in [".", "!", "?"]:
+        # treat whole text as one sentence
+        return sentences
+    return [sentence.strip() for sentence in sentences if sentence.strip() != ""]
+
+
 def chunking_semantic(text: str, max_chunk_size: int = DEFAULT_SEMANTIC_CHUNK_SIZE, overlap: int = DEFAULT_SEMANTIC_CHUNK_OVERLAP) -> list[str]:
-    sentences = re.split(r"(?<=[.!?])\s+", text)
+    sentences = preprocess_text(text)
+    sentences = re.split(r"(?<=[.!?])\s+", " ".join(sentences))
     chunks = []
     i = 0
     while i < len(sentences):
