@@ -10,6 +10,8 @@ from .utils_search import (
     DEFAULT_RRF_SEARCH_K,
 )
 
+from .llm import enhance_query
+
 class HybridSearch:
     def __init__(self, documents):
         self.documents = documents
@@ -196,10 +198,20 @@ def command_weighted_search(query: str, alpha: float, limit: int = DEFAULT_SEARC
         print(f" BM25: {res["bm25"]: .4f}, Semantic: {res["semantic"]: .4f}")
         print(f" {res["document"]}")
 
-def command_rrf_search(query: str, k: int = DEFAULT_RRF_SEARCH_K, limit: int = DEFAULT_SEARCH_LIMIT) -> None:
+def command_rrf_search(query: str, k: int = DEFAULT_RRF_SEARCH_K, enhance_method: str | None = "spell", limit: int = DEFAULT_SEARCH_LIMIT, rerank_method: str = "individual") -> None:
+    query_original = query
+    if enhance_method is not None:
+        query = enhance_query(query, enhance_method)
+        print(f"Enhanced query ({enhance_method}): '{query_original}' -> '{query}'")
+
     documents = load_movies()
     search_instance = HybridSearch(documents)
     results = search_instance.rrf_search(query, k, limit)
+
+    results["original_query"] = query_original
+    results["enhance_method"] = enhance_method
+    results["enhance_query"] = query
+
     for i, res in enumerate(results.values()):
         print(f"{i+1}. {res["title"]}")
         print(f" RRF Score: {res["rrf_score"]: .4f}")
