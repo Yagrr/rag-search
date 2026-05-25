@@ -11,11 +11,6 @@ from lib.utils_search import (
     DEFAULT_RRF_SEARCH_K,
 )
 
-from lib.llm import (
-    enhance_query,
-)
-
-
 def main() -> None:
     parser = argparse.ArgumentParser(description="Hybrid Search CLI")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
@@ -37,6 +32,7 @@ def main() -> None:
     rrf_search_parser.add_argument("-k", type=int, default=DEFAULT_RRF_SEARCH_K)
     rrf_search_parser.add_argument("--limit", type=int, default=DEFAULT_SEARCH_LIMIT)
     rrf_search_parser.add_argument("--enhance", type=str, choices=["spell", "rewrite", "expand"], help="Query enhancement method",)
+    rrf_search_parser.add_argument("--rerank-method", type=str, choices=["individual", "batch", "cross_encoder"], help="Document reranking method")
 
 
     args = parser.parse_args()
@@ -46,11 +42,7 @@ def main() -> None:
             command_weighted_search(args.query, args.alpha, args.limit)
 
         case "rrf-search":
-            if args.enhance is not None:
-                query = enhance_query(args.query, args.enhance)
-            else:
-                query = args.query
-            command_rrf_search(query, args.k, args.limit)
+            command_rrf_search(args.query, args.k, args.enhance, args.limit, args.rerank_method)
 
         case "normalize":
             scores_normalized = normalize(args.values)
