@@ -2,9 +2,12 @@ import time
 import json
 from random import randint
 
-from llm import call_llm
+from sentence_transformers import CrossEncoder
+
+from .llm import call_llm
 from .utils_search import (
     DEFAULT_MODEL_PROMPTING_SECONDS_DELAY,
+    DEFAULT_CROSS_ENCODER
 )
 
 def rerank_results(query: str, results: dict, rerank_method: str | None, limit: int) -> dict:
@@ -48,7 +51,6 @@ def rerank_results(query: str, results: dict, rerank_method: str | None, limit: 
             for rank, id in enumerate(reranked_ids, 1):
                 results[id]["rerank_rank"] = rank
 
-
             results_reranked_sorted = dict(
                 sorted(
                     results.items(),
@@ -56,6 +58,25 @@ def rerank_results(query: str, results: dict, rerank_method: str | None, limit: 
                 )[:limit]
             )
 
+            return results_reranked_sorted
+
+        case "cross_encoder":
+            pairs = []
+            for id in results:
+                doc = results[id]
+                pairs.append([query, f"{doc.get('title', '')} - {doc.get('document', '')}"])
+            scores = rerank_crossencoder(pairs)
+
+            for i, id in enumerate(results):
+                results[id]["rerank_crossencoder_score"] = scores[i]
+
+            results_reranked_sorted = dict(
+                sorted(
+                    results.items(),
+                    key=lambda item: item[1].get("rerank_crossencoder_score"),
+                    reverse=True,
+                )[:limit]
+            )
             return results_reranked_sorted
 
         case _:
@@ -109,3 +130,12 @@ def rerank_batch(query: str, doc_list_str: str) -> str:
         """
     result_json = call_llm(prompt)
     return result_json
+
+def rerank_crossencoder(pairs: list[list[str]]):
+    cross_encoder = CrossEncoder(DEFAULT_CROSS_ENCODER)
+    try:
+        scores = cross_encoder.predict(pairs)
+    except ValueError as e:
+        print(f"{e} - Error while using cross encoder")
+        return []
+    return scores

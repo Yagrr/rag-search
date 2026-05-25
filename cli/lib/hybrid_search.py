@@ -1,7 +1,4 @@
 import os
-import time
-import json
-from random import randint
 
 from .keyword_search import InvertedIndex
 from .semantic_search import ChunkedSemanticSearch
@@ -170,6 +167,7 @@ class HybridSearch:
                     "rrf_score": rrf_score(rank_bm25, k) + rrf_score(rank_semantic, k),
                     "rerank_score": 0.0,
                     "rerank_rank": 0,
+                    "rerank_crossencoder_score": 0.0,
                 }
             )
 
@@ -244,9 +242,13 @@ def command_rrf_search(
         print(f"{i+1}. {res["title"]}")
 
         if res.get("rerank_score", 0) != 0:
-            print(f" Re-rank Score: {res["rerank_score"]}/10")
+            print(f" Re-rank Score: {res['rerank_score']}/10")
         if res.get("rerank_rank", 0) != 0:
-            print(f" Re-rank Rank: {res["rerank_rank"]}")
+            print(f" Re-rank Rank: {res['rerank_rank']}")
+        if res.get("rerank_crossencoder_score", 0) != 0:
+            print(f"Cross Encoder Score: {res['rerank_crossencoder_score']:.3f}")
+
+
 
         print(f" RRF Score: {res["rrf_score"]: .4f}")
         print(f" BM25 Rank: {res["rank_bm25"]}, Semantic Rank: {res["rank_semantic"]}")

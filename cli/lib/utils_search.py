@@ -28,6 +28,8 @@ DEFAULT_WEIGHTED_SEARCH_ALPHA = 0.5
 
 DEFAULT_RRF_SEARCH_K = 60
 
+DEFAULT_CROSS_ENCODER = "cross-encoder/ms-marco-TinyBERT-L2-v2"
+
 def load_movies() -> dict:
     with open(PATH_DATA, "r") as file:
         data = json.load(file)
