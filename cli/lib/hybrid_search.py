@@ -176,16 +176,16 @@ class HybridSearch:
                 limit = int(limit / 5)
 
         # Sorting by rrf_score
-        res_semantic_sorted = dict(
+        res_hybrid_sorted = dict(
             sorted(
                 res_hybrid.items(), key=lambda item: item[1].get("rrf_score"), reverse=True
             )[:limit]
         )
 
         if rerank_method is None:
-            return res_semantic_sorted
+            return res_hybrid_sorted
         else:
-            return rerank_results(query, res_semantic_sorted, rerank_method, limit)
+            return rerank_results(query, res_hybrid_sorted, rerank_method, limit)
 
 
 def normalize(values: list[float]) -> list[float]:
