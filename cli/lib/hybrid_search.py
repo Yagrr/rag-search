@@ -171,7 +171,9 @@ class HybridSearch:
                 }
             )
 
-        limit = int(limit / 5)
+        match rerank_method:
+            case "individual" | "batch" | "cross_encoder":
+                limit = int(limit / 5)
 
         # Sorting by rrf_score
         res_semantic_sorted = dict(
@@ -180,8 +182,10 @@ class HybridSearch:
             )[:limit]
         )
 
-        # Rerank documents
-        return rerank_results(query, res_semantic_sorted, rerank_method, limit)
+        if rerank_method is None:
+            return res_semantic_sorted
+        else:
+            return rerank_results(query, res_semantic_sorted, rerank_method, limit)
 
 
 def normalize(values: list[float]) -> list[float]:
