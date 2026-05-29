@@ -1,14 +1,20 @@
 import time
 import json
 from random import randint
+import logging
+import logging.config
 
 from sentence_transformers import CrossEncoder
 
 from .llm import call_llm
 from .utils_search import (
+    PATH_LOGGER_CONFIG,
     DEFAULT_MODEL_PROMPTING_SECONDS_DELAY,
     DEFAULT_CROSS_ENCODER
 )
+
+logging.config.fileConfig(PATH_LOGGER_CONFIG)
+logger = logging.getLogger(__name__)
 
 def rerank_results(query: str, results: dict, rerank_method: str | None, limit: int) -> dict:
     print(f"Re-ranking documents ({rerank_method})")
@@ -28,9 +34,21 @@ def rerank_results(query: str, results: dict, rerank_method: str | None, limit: 
                     results.items(),
                     key=lambda item: item[1].get("rerank_score"),
                     reverse=True,
-                )[:limit]
+                )
             )
-            return results_reranked_sorted
+
+            if logger.isEnabledFor(logging.DEBUG): 
+                logger.debug("== RRF search results after individual re-ranking ==\n")
+                for i, result in enumerate(dict(results_reranked_sorted).values()):
+                    logger.debug(f"""
+                    == Before re-ranking ==
+                    Title: {result["title"]}
+                    BM25 Rank: {result["rank_bm25"]}, Semantic Rank: {result["rank_semantic"]}
+                    RRF score: {result["rrf_score"]: .4f}
+                    {result["document"]}
+                    """)
+
+            return results_reranked_sorted[:limit]
         
         case "batch":
             """
@@ -55,10 +73,21 @@ def rerank_results(query: str, results: dict, rerank_method: str | None, limit: 
                 sorted(
                     results.items(),
                     key=lambda item: item[1].get("rerank_rank")
-                )[:limit]
+                )
             )
 
-            return results_reranked_sorted
+            if logger.isEnabledFor(logging.DEBUG): 
+                logger.debug("== RRF search results after batch re-ranking ==\n")
+                for i, result in enumerate(dict(results_reranked_sorted).values()):
+                    logger.debug(f"""
+                    == Before re-ranking ==
+                    Title: {result["title"]}
+                    BM25 Rank: {result["rank_bm25"]}, Semantic Rank: {result["rank_semantic"]}
+                    RRF score: {result["rrf_score"]: .4f}
+                    {result["document"]}
+                    """)
+
+            return results_reranked_sorted[:limit]
 
         case "cross_encoder":
             pairs = []
@@ -75,8 +104,20 @@ def rerank_results(query: str, results: dict, rerank_method: str | None, limit: 
                     results.items(),
                     key=lambda item: item[1].get("rerank_crossencoder_score"),
                     reverse=True,
-                )[:limit]
+                )
             )
+
+            if logger.isEnabledFor(logging.DEBUG): 
+                logger.debug("== RRF search results after cross-encoder re-ranking ==\n")
+                for i, result in enumerate(dict(results_reranked_sorted).values()):
+                    logger.debug(f"""
+                    == Before re-ranking ==
+                    Title: {result["title"]}
+                    BM25 Rank: {result["rank_bm25"]}, Semantic Rank: {result["rank_semantic"]}
+                    RRF score: {result["rrf_score"]: .4f}
+                    {result["document"]}
+                    """)
+
             return results_reranked_sorted
 
         case _:

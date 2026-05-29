@@ -1,8 +1,11 @@
 import os
+import logging
+import logging.config
 
 from .keyword_search import InvertedIndex
 from .semantic_search import ChunkedSemanticSearch
 from .utils_search import (
+    PATH_LOGGER_CONFIG,
     load_movies,
     DEFAULT_SEARCH_LIMIT,
     SCORE_PRECISION,
@@ -12,11 +15,15 @@ from .utils_search import (
 
 from .llm import (
     enhance_query,
+    evaluate_results,
 )
 
 from .rerank import (
     rerank_results
 )
+
+logging.config.fileConfig(PATH_LOGGER_CONFIG)
+logger = logging.getLogger(__name__)
 
 class HybridSearch:
     def __init__(self, documents):
@@ -104,7 +111,7 @@ class HybridSearch:
         
         return res_hybrid_sorted
 
-    def rrf_search(self, query, k: int = DEFAULT_RRF_SEARCH_K, limit: int = DEFAULT_SEARCH_LIMIT, rerank_method: str | None = None):
+    def rrf_search(self, query, k: int = DEFAULT_RRF_SEARCH_K, limit: int = DEFAULT_SEARCH_LIMIT, rerank_method: str | None = None, debug: bool = False):
         res_bm25_raw = self._bm25_search(query, limit * 500) 
         res_bm25 = {id - 1 : score for id, score in res_bm25_raw.items()}
         res_semantic = self.semantic_search.search_chunks(query, limit * 500)
@@ -171,16 +178,28 @@ class HybridSearch:
                 }
             )
 
+
+        # Sorting by rrf_score
+        res_hybrid_sorted = sorted(res_hybrid.items(), key=lambda item: item[1].get("rrf_score"), reverse=True)
+
+        if logger.isEnabledFor(logging.DEBUG): 
+            logger.debug("== RRF search results before re-ranking ==\n")
+            for i, result in enumerate(dict(res_hybrid_sorted).values()):
+                logger.debug(f"""
+                == Before re-ranking ==
+                Limit: {limit} - (check if scores are less than limit to see if they would be filtered out)
+                Title: {result["title"]}
+                BM25 Rank: {result["rank_bm25"]}, Semantic Rank: {result["rank_semantic"]}
+                RRF score: {result["rrf_score"]: .4f}
+                {result["document"]}
+                """)
+
         match rerank_method:
             case "individual" | "batch" | "cross_encoder":
                 limit = int(limit / 5)
 
-        # Sorting by rrf_score
-        res_hybrid_sorted = dict(
-            sorted(
-                res_hybrid.items(), key=lambda item: item[1].get("rrf_score"), reverse=True
-            )[:limit]
-        )
+        # Cut off to limit and convert to dictionary
+        res_hybrid_sorted = dict(res_hybrid_sorted[:limit])
 
         if rerank_method is None:
             return res_hybrid_sorted
@@ -227,33 +246,68 @@ def command_rrf_search(
     enhance_method: str | None = None,
     limit: int = DEFAULT_SEARCH_LIMIT,
     rerank_method: str | None = None,
+    debug: bool = False,
+    evaluate: bool = False,
 ) -> None:
 
     query_original = query
+    
     if enhance_method is not None:
         query = enhance_query(query, enhance_method)
         print(f"Enhanced query ({enhance_method}): '{query_original}' -> '{query}'")
 
-    match rerank_method:
-        case "individual" | "batch" | "cross_encoder":
-            limit = int(limit * 5)
+    if rerank_method in ["individual", "batch", "cross_encoder"]:
+        limit = int(limit * 5)
+
+    if debug:
+        print("Logging enabled")
+        logger.setLevel(logging.DEBUG)
+        logger.info(f"Original query: {query_original}\nEnhanced query: {query}")
+
 
     documents = load_movies()
     search_instance = HybridSearch(documents)
-    results = search_instance.rrf_search(query, k, limit, rerank_method)
+    results = search_instance.rrf_search(query, k, limit, rerank_method, debug)
 
+    if logger.isEnabledFor(logging.DEBUG):
+        print("Logging level: debug")
+        logger.debug("== RRF search final results ==\n")
+        for i, result in enumerate(results.values()):
+            logger.debug(f"""
+            == Final RRF search result ==
+            Title: {result["title"]}\n
+            Re-rank Score: {result.get('rerank_score', 0)}/10\n
+            Re-rank Rank: {result.get('rerank_rank', 0)}\n
+            Cross Encoder Score: {result.get('rerank_crossencoder_score', 0):.3f}\n
+            BM25 Rank: {result["rank_bm25"]}, Semantic Rank: {result["rank_semantic"]}\n
+            RRF score: {result["rrf_score"]: .4f}\n
+            {result["document"]}
+            """)
+
+    results_stdout = []
     for i, res in enumerate(results.values()):
-        print(f"{i+1}. {res["title"]}")
-
+        result_reranked_score = ""
+        result_rerank_rank = ""
+        result_cross_encoder_score = ""
         if res.get("rerank_score", 0) != 0:
-            print(f" Re-rank Score: {res['rerank_score']}/10")
+            result_reranked_score = f" Re-rank Score: {res['rerank_score']}/10"
         if res.get("rerank_rank", 0) != 0:
-            print(f" Re-rank Rank: {res['rerank_rank']}")
+            result_rerank_rank = f"Re-rank Rank: {res['rerank_rank']}"
         if res.get("rerank_crossencoder_score", 0) != 0:
-            print(f"Cross Encoder Score: {res['rerank_crossencoder_score']:.3f}")
+            result_cross_encoder_score = f"Cross Encoder Score: {res['rerank_crossencoder_score']:.3f}"
 
+        res_stdout = f""" {i + 1}. {res["title"]}\n{result_reranked_score} {result_rerank_rank} {result_cross_encoder_score}
+                    RRF Score: {res["rrf_score"]: .4f}
+                    BM25 Rank: {res["rank_bm25"]}, Semantic Rank: {res["rank_semantic"]}
+                    {res["document"]}"""
 
+        if evaluate:
+            results_stdout.append(res_stdout)
+        else:
+            print(res_stdout)
 
-        print(f" RRF Score: {res["rrf_score"]: .4f}")
-        print(f" BM25 Rank: {res["rank_bm25"]}, Semantic Rank: {res["rank_semantic"]}")
-        print(f" {res["document"]}")
+    if evaluate:
+        print("Evaluating results...")
+        evaluation_scores = evaluate_results(query, results_stdout)
+        for i, res in enumerate(results.values()):
+            print(f"{i+1}. {res["title"]}: {evaluation_scores[i]}/3")

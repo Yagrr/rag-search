@@ -1,4 +1,5 @@
 import os
+import json
 
 from dotenv import load_dotenv
 from google import genai
@@ -15,22 +16,29 @@ client = genai.Client(api_key=api_key)
 model = "gemma-4-31b-it"
 
 def call_llm(prompt: str, model = model) -> str:
-    response = client.models.generate_content(
-        model=model,
-        contents=prompt,
-        config=types.GenerateContentConfig(
-            safety_settings=[
-                types.SafetySetting(
-                    category=types.HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-                    threshold=types.HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
-                ),
-            ]
-        ),
-    )
-    if not response.text:
-            return ""
+    try:
+        response = client.models.generate_content(
+            model=model,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                safety_settings=[
+                    types.SafetySetting(
+                        category=types.HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+                        threshold=types.HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+                    ),
+                ]
+            ),
+        )
+    except Exception as e:
+        response = ""
+        print(f"{e} - Retrying LLM call...")
+
+    if response == "":
+        return ""
+    elif not response.text:
+        return ""
     else: 
-            return response.text
+        return response.text
 
 def spell_correct(query: str) -> str:
     prompt = f"""Fix any spelling errors in the user-provided movie search query below.
@@ -97,3 +105,26 @@ def enhance_query(query: str, method: str = "spell") -> str:
             return expand_query(query)
         case _:
             return query
+
+def evaluate_results(query, formatted_results):
+    query = f"""Rate how relevant each result is to this query on a 0-3 scale:
+
+            Query: "{query}"
+
+            Results:
+            {chr(10).join(formatted_results)}
+
+            Scale:
+            - 3: Highly relevant
+            - 2: Relevant
+            - 1: Marginally relevant
+            - 0: Not relevant
+
+            Do NOT give any numbers other than 0, 1, 2, or 3.
+
+            Return ONLY the scores in the same order you were given the documents. Return a valid JSON list, nothing else. For example:
+
+            [2, 0, 3, 2, 0, 1]
+            """
+    results_evaluated = json.loads(call_llm(query))
+    return results_evaluated
