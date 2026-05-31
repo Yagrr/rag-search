@@ -19,7 +19,7 @@ def search(query: str, limit: int=DEFAULT_SEARCH_LIMIT) -> dict:
     query_original = query
 
     documents: dict = load_movies()
-    enhance_method = "rewrite"
+    enhance_method = "spell"
     rerank_method = "cross_encoder"
     limit = 5
     k = 60
@@ -49,7 +49,7 @@ def collate_results(search_results: dict) -> tuple[str, str]:
 
     for i, res in search_results.items():
         search_results_titles.append(f"- {res["title"]}")
-        search_results_docs.append(f"""{i+1}. Title:{res["title"]}
+        search_results_docs.append(f"""ID: {i}. Title:{res["title"]}
         Description: {res["document"]}""")
 
     titles = "\n".join(search_results_titles)
@@ -64,6 +64,7 @@ def command_rag(query: str):
     print("Search Results:")
     print(titles)
     print(f"RAG Response:\n{results_rag}")
+    return
 
 def summarize(query: str, results: str) -> str:
     prompt = f"""Provide information useful to the query below by synthesizing
@@ -89,3 +90,36 @@ def command_summarize(query: str, limit: int=DEFAULT_SEARCH_LIMIT) -> None:
     print(titles)
     print("LLM Summary:")
     print(summary)
+    return
+
+def cite(query: str, documents: str) -> str:
+    prompt = f"""Answer the query below and give information based on the provided documents.
+
+    The answer should be tailored to users of Hoopla, a movie streaming service.
+    If not enough information is available to provide a good answer, say so, but give the best answer possible while citing the sources available.
+
+    Query: {query}
+
+    Documents:
+    {documents}
+
+    Instructions:
+    - Provide a comprehensive answer that addresses the query
+    - Cite sources in the format [1], [2], etc. when referencing information
+    - If sources disagree, mention the different viewpoints
+    - If the answer isn't in the provided documents, say "I don't have enough information"
+    - Be direct and informative
+
+    Answer:"""
+    return call_llm(prompt)
+
+
+def command_citations(query: str, limit: int=DEFAULT_SEARCH_LIMIT) -> None:
+    search_results = search(query, limit)
+    titles, docs = collate_results(search_results)
+    answer = cite(query, docs)
+    print("Search Results:")
+    print(titles)
+    print("LLM Answer:")
+    print(answer)
+    return

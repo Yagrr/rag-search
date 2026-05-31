@@ -1,4 +1,5 @@
 import os
+import time
 import json
 
 from dotenv import load_dotenv
@@ -32,6 +33,8 @@ def call_llm(prompt: str, model = model) -> str:
     except Exception as e:
         response = ""
         print(f"{e} - Retrying LLM call...")
+        time.sleep(5)
+        call_llm(prompt, model)
 
     if response == "":
         return ""
