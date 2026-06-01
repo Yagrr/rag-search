@@ -282,7 +282,6 @@ class ChunkedSemanticSearch(SemanticSearch):
         embedding_query = self.generate_embedding(query)
         chunk_scores: list[dict] = []
         doc_index_to_score = {}
-        i = 0
         for metadata, chunk_embedding in zip(self.chunk_metadata, self.chunk_embeddings):
             cosine_score = cosine_similarity(embedding_query, chunk_embedding)
             chunk_scores.append(
@@ -292,7 +291,6 @@ class ChunkedSemanticSearch(SemanticSearch):
                     "score": cosine_score,
                 }
             )
-            i += 1
 
         for chunk_score in chunk_scores:
             movie_idx = chunk_score["movie_idx"]
