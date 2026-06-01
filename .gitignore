@@ -11,6 +11,5 @@ wheels/
 
 # Project files
 .env
-data/
 cache/
-.log
+*.log
