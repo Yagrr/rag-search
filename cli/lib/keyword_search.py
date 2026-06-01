@@ -22,10 +22,18 @@ class InvertedIndex:
         # Index of token to document object
         self.index = defaultdict(set)
 
+        # ID integer to full document object
         self.docmap: dict[int, dict] = {}
+
+        # Track how many times each term appears in each document.
+        # str: int
         self.term_frequencies = defaultdict(Counter)
+
+        # Used for length normalization so that longer docs don't get an unfair advantage over shorter ones
+        # ID integer to number of tokens integer
         self.doc_lengths: dict = {}
 
+        # Paths to store data in cache. Create cache folder if not created already.
         self.path_index = os.path.join(PATH_CACHE, "index.pkl")
         self.path_docmap = os.path.join(PATH_CACHE, "docmap.pkl")
         self.path_term_frequencies = os.path.join(PATH_CACHE, "term_frequencies.pkl")
