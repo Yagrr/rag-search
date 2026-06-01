@@ -29,19 +29,14 @@ def call_llm(prompt: str, model = model) -> str:
                     ),
                 ]
             ),
-        )
+        ).text
     except Exception as e:
         response = ""
         print(f"{e} - Retrying LLM call...")
         time.sleep(5)
         call_llm(prompt, model)
 
-    if response == "":
-        return ""
-    elif not response.text:
-        return ""
-    else: 
-        return response.text
+    return response if response else ""
 
 def spell_correct(query: str) -> str:
     prompt = f"""Fix any spelling errors in the user-provided movie search query below.
@@ -52,8 +47,8 @@ def spell_correct(query: str) -> str:
     User query: "{query}"
     """ 
     response = call_llm(prompt)
-    expanded_terms = (response or "").strip().strip('"')
-    return f"{query} {expanded_terms}".strip()
+    query_spell_checked = (response or "").strip().strip('"')
+    return query_spell_checked if query_spell_checked else query
 
 def rewrite_query(query: str) -> str:
     prompt = f"""Rewrite the user-provided movie search query below to be more specific and searchable.
