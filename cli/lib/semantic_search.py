@@ -282,8 +282,8 @@ class ChunkedSemanticSearch(SemanticSearch):
         embedding_query = self.generate_embedding(query)
         chunk_scores: list[dict] = []
         doc_index_to_score = {}
-        for metadata, chunk_embedding in zip(self.chunk_metadata, self.chunk_embeddings):
-            cosine_score = cosine_similarity(embedding_query, chunk_embedding)
+        for metadata, embedding_chunk in zip(self.chunk_metadata, self.chunk_embeddings):
+            cosine_score = cosine_similarity(embedding_query, embedding_chunk)
             chunk_scores.append(
                 {
                     "chunk_idx": metadata.get("chunk_idx"),
