@@ -135,7 +135,7 @@ class HybridSearch:
         res_hybrid = {}
         for i, id in enumerate(res_bm25, 1):
             title = self.documents[id]["title"]
-            document = self.documents[id]["description"][:100]
+            document = self.documents[id]["description"]
             res_hybrid.update(
                 {
                     id: {

@@ -34,7 +34,7 @@ def search(query: str, limit: int=DEFAULT_SEARCH_LIMIT) -> dict:
     return search_instance.rrf_search(query, k, limit, rerank_method)
 
 
-def collate_results(search_results: dict) -> tuple[str, str]:
+def format_context(search_results: dict) -> tuple[str, str]:
     """
     Return titles in format:
     - Title Example 1
@@ -59,7 +59,7 @@ def collate_results(search_results: dict) -> tuple[str, str]:
 
 def command_rag(query: str):
     search_results = search(query)
-    titles, docs = collate_results(search_results)
+    titles, docs = format_context(search_results)
     results_rag = rag(query, docs)
     print("Search Results:")
     print(titles)
@@ -84,7 +84,7 @@ Provide a comprehensive 3–4 sentence answer that combines information from mul
 
 def command_summarize(query: str, limit: int=DEFAULT_SEARCH_LIMIT) -> None:
     search_results = search(query, limit)
-    titles, docs = collate_results(search_results)
+    titles, docs = format_context(search_results)
     summary = summarize(query, docs)
     print("Search Results:")
     print(titles)
@@ -116,10 +116,38 @@ def cite(query: str, documents: str) -> str:
 
 def command_citations(query: str, limit: int=DEFAULT_SEARCH_LIMIT) -> None:
     search_results = search(query, limit)
-    titles, docs = collate_results(search_results)
+    titles, docs = format_context(search_results)
     answer = cite(query, docs)
     print("Search Results:")
     print(titles)
     print("LLM Answer:")
+    print(answer)
+    return
+
+def ask_question(question: str, context: str) -> str:
+    prompt = f"""Answer the user's question based on the provided movies that are available on Hoopla, a streaming service.
+
+    Question: {question}
+
+    Documents:
+    {context}
+
+    Instructions:
+    - Answer questions directly and concisely
+    - Be casual and conversational
+    - Don't be cringe or hype-y
+    - Talk like a normal person would in a chat conversation
+
+    Answer:"""
+    return call_llm(prompt)
+
+
+def command_question(question: str, limit: int=DEFAULT_SEARCH_LIMIT) -> None:
+    search_results = search(question, limit)
+    titles, docs = format_context(search_results)
+    answer = ask_question(question, docs)
+    print("Search Results:")
+    print(titles)
+    print("Answer:")
     print(answer)
     return

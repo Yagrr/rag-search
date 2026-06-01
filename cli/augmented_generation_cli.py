@@ -4,6 +4,7 @@ from lib.augmented_generation import (
     command_rag, 
     command_summarize,
     command_citations,
+    command_question,
 )
 
 def main() -> None:
@@ -27,6 +28,12 @@ def main() -> None:
     citations_parser.add_argument("query", type=str, help="Query to summarize and add citations")
     citations_parser.add_argument("--limit", type=int, default=DEFAULT_SEARCH_LIMIT, help="Query to summarizel")
 
+    question_parser = subparsers.add_parser(
+        "question", help="Ask a question about the dataset"
+    )
+    question_parser.add_argument("query", type=str, help="Query to ask a question about the dataset")
+    question_parser.add_argument("--limit", type=int, default=DEFAULT_SEARCH_LIMIT, help="Query to summarizel")
+
     args = parser.parse_args()
 
     match args.command:
@@ -38,6 +45,9 @@ def main() -> None:
 
         case "citations":
             command_citations(args.query)
+
+        case "question":
+            command_question(args.query, args.limit)
 
         case _:
             parser.print_help()
