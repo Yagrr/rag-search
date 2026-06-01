@@ -212,7 +212,7 @@ class ChunkedSemanticSearch(SemanticSearch):
         self.path_chunk_embeddings = os.path.join(PATH_CACHE, "chunk_embeddings.npy")
         self.path_chunk_metadata = os.path.join(PATH_CACHE, "chunk_metadata.json")
 
-    def build_chunk_embeddings(self, documents: list[dict]) -> np.ndarray:
+    def build_chunk_embeddings(self, documents: list[dict]):
         self.documents = documents
         self.document_map = {}
 
@@ -253,7 +253,7 @@ class ChunkedSemanticSearch(SemanticSearch):
 
         return self.chunk_embeddings
 
-    def load_or_create_chunk_embeddings(self, documents: list[dict]) -> np.ndarray:
+    def load_or_create_chunk_embeddings(self, documents: list[dict]):
         self.documents = documents
         self.documents_map = {}
         for doc in documents:
@@ -327,7 +327,7 @@ class ChunkedSemanticSearch(SemanticSearch):
         return results
 
 
-def embed_chunks() -> np.ndarray:
+def embed_chunks():
     documents = list(load_movies())
     embed_instance = ChunkedSemanticSearch()
     return embed_instance.load_or_create_chunk_embeddings(documents)
