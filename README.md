@@ -91,7 +91,7 @@ search for weighted search. The [Reciprocal Rank Fusion](https://www.elastic.co/
 ### Logging hybrid search results
 
 Logging capabilities are only available for RRF-search. Use the `--debug` flag to activate logs.
-Search results following RRF-search are saved in `./data/search.log`.
+Search results following RRF-search are saved in `./cache/search.log`.
 
 - Logging: `uv run cli/hybrid_search_cli.py rrf-search "monster in space"  --limit 10 --debug`
 
