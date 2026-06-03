@@ -299,7 +299,7 @@ def command_rrf_search(
         res_stdout = f""" {i + 1}. {res["title"]}\n{result_reranked_score} {result_rerank_rank} {result_cross_encoder_score}
                     RRF Score: {res["rrf_score"]: .4f}
                     BM25 Rank: {res["rank_bm25"]}, Semantic Rank: {res["rank_semantic"]}
-                    {res["document"]}"""
+                    {res["document"][:100]}..."""
 
         if evaluate:
             results_stdout.append(res_stdout)
