@@ -31,6 +31,7 @@ class MultimodalSearch:
         return self.model.encode([image])[0]
 
     def build_text_embeddings(self): 
+        os.makedirs(PATH_CACHE, exist_ok=True)
         self.text_embeddings = self.model.encode(self.texts, show_progress_bar=True)
         np.save(self.path_text_embeddings, self.text_embeddings)
         return self.text_embeddings

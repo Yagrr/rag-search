@@ -34,6 +34,7 @@ class SemanticSearch:
     def build_embeddings(self, documents: list[dict]):
         self.documents = documents
         docs_str: list[str] = []
+        os.makedirs(PATH_CACHE, exist_ok=True)
 
         for doc in documents:
             self.document_map[doc["id"]] = doc
@@ -213,6 +214,7 @@ class ChunkedSemanticSearch(SemanticSearch):
         self.path_chunk_metadata = os.path.join(PATH_CACHE, "chunk_metadata.json")
 
     def build_chunk_embeddings(self, documents: list[dict]):
+        os.makedirs(PATH_CACHE, exist_ok=True)
         self.documents = documents
         self.document_map = {}
 
