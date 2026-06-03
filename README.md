@@ -6,7 +6,7 @@ A CLI search engine for movies - Retrieval-augmented generation (RAG)-powered se
 
 This project is an implementation of keyword, vector, semantic and LLM-enhanced
 search, with a full RAG pipeline for searching through a toy dataset from
-[Boot.dev](https://www.boot.dev)'s ["Learn Retrieval Augmented Generation" course](https://www.boot.dev/courses/learn-retrieval-augmented-generation) taught by [Isaac Flath](https://isaacflath.com/). This tool is built by following the aforementioned course.
+[Boot.dev](https://www.boot.dev)'s ["Learn Retrieval Augmented Generation"](https://www.boot.dev/courses/learn-retrieval-augmented-generation) course taught by [Isaac Flath](https://isaacflath.com/). This tool is built by following the aforementioned course.
 
 This project is largely for my own personal use and learning, use at your own risk.
 
@@ -16,7 +16,7 @@ This project is largely for my own personal use and learning, use at your own ri
     - Python version >=3.13
     - uv version >=0.11
 
-2) Clone the repository locally and install dependencies
+2) Clone the repository locally and install dependencies:
     
     ```python
     git clone <URL>
@@ -50,11 +50,12 @@ Subsequent searches are faster once embeddings are created.
 
 ## Basic Usage
 
-**IMPORTANT - Read if you choose to use this**: A Google API key is required for any LLM calls. If you
-would like to use all features from this project, please create a free API key via
-the [Google AI Studio](https://aistudio.google.com/). This project takes no
-responsibility for any token usage costs that you may incur if you choose to
-use the Hugging Face or Google Gemini's paid API. You're on your own.
+
+> **IMPORTANT - Read if you choose to use this tool**: A Google API key is required for any LLM calls. If you
+> would like to use all features from this project, please create a free API key via
+> the [Google AI Studio](https://aistudio.google.com/). This project takes no
+> responsibility for any token usage costs that you may incur if you choose to
+> use the Hugging Face or Google Gemini's paid API. You're on your own.
 
 Commands for searching are presented herein. Further functionalities, search
 settings, and search modifiers are provided but not listed. Read the source code in the `_cli.py`
