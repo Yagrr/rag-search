@@ -33,6 +33,9 @@ DEFAULT_RRF_SEARCH_K = 60
 
 DEFAULT_CROSS_ENCODER = "cross-encoder/ms-marco-TinyBERT-L2-v2"
 
+DEFAULT_LLM = "gemma-4-31b-it"
+DEFAULT_MULTIMODAL_SEARCH_MODEL = "clip-ViT-B-32"
+
 def load_movies() -> dict:
     with open(PATH_DATA, "r") as file:
         data = json.load(file)

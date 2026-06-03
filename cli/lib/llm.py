@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 
+from utils_search import DEFAULT_LLM
 
 load_dotenv()
 
@@ -14,7 +15,7 @@ if not api_key:
     raise RuntimeError("GEMINI_API_KEY environment is not set")
 
 client = genai.Client(api_key=api_key)
-model = "gemma-4-31b-it"
+model = DEFAULT_LLM
 
 def call_llm(prompt: str, model = model) -> str:
     try:

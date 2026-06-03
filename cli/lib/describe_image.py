@@ -7,6 +7,8 @@ from google import genai
 from google.genai import types
 from google.genai.types import GenerateContentResponse
 
+from utils_search import DEFAULT_LLM
+
 
 load_dotenv()
 api_key = os.environ.get("GEMINI_API_KEY")
@@ -14,7 +16,7 @@ if not api_key:
     raise RuntimeError("GEMINI_API_KEY environment is not set")
 
 client = genai.Client(api_key=api_key)
-model = "gemma-4-31b-it"
+model = DEFAULT_LLM
 
 def describe_image(prompt: str, parts) -> GenerateContentResponse:
     try:

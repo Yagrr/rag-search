@@ -4,11 +4,11 @@ import numpy as np
 from PIL import Image
 from sentence_transformers import SentenceTransformer
 
-from lib.utils_search import DEFAULT_SEARCH_LIMIT, load_movies, PATH_CACHE, PROJECT_ROOT
+from lib.utils_search import DEFAULT_MULTIMODAL_SEARCH_MODEL, DEFAULT_SEARCH_LIMIT, load_movies, PATH_CACHE, PROJECT_ROOT
 from lib.semantic_search import cosine_similarity
 
 class MultimodalSearch:
-    def __init__(self, documents: list[dict], model_name: str ="clip-ViT-B-32"):
+    def __init__(self, documents: list[dict], model_name: str =DEFAULT_MULTIMODAL_SEARCH_MODEL):
         self.model = SentenceTransformer(model_name)
         self.documents = documents
         self.document_map = {}
