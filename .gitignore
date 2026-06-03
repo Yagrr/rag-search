@@ -12,4 +12,5 @@ wheels/
 # Project files
 .env
 cache/
+*.jpeg
 *.log
