@@ -5,8 +5,7 @@
 A CLI search engine for movies - Retrieval-augmented generation (RAG)-powered search.
 
 This project is an implementation of keyword, vector, semantic and LLM-enhanced
-search, with a full RAG pipeline for searching through a toy dataset from
-[Boot.dev](https://www.boot.dev)'s ["Learn Retrieval Augmented Generation"](https://www.boot.dev/courses/learn-retrieval-augmented-generation) course taught by [Isaac Flath](https://isaacflath.com/). This tool is built by following the aforementioned course.
+search, with a full RAG pipeline for searching through a toy dataset.
 
 This project is largely for my own personal use and learning, use at your own risk.
 
