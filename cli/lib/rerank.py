@@ -5,6 +5,7 @@ import time
 from random import randint
 
 from sentence_transformers import CrossEncoder
+from sentence_transformers.base.modality_types import PairInput
 
 from .llm import call_llm
 from .utils_search import (
@@ -102,7 +103,7 @@ def rerank_results(
 
         case "cross_encoder":
             pairs = []
-            for id in results:
+            for id in results.items():
                 doc = results[id]
                 pairs.append(
                     [query, f"{doc.get('title', '')} - {doc.get('document', '')}"]
