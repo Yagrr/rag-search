@@ -5,6 +5,7 @@ description = "A CLI tool for searching through a toy dataset, powered by retrie
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "google-api-core>=2.38.0",
     "google-genai>=2.4.0",
     "nltk==3.9.1",
     "numpy==2.3.3",

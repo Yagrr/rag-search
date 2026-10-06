@@ -1,11 +1,11 @@
+import json
 import os
 import time
-import json
 
 from dotenv import load_dotenv
 from google import genai
+from google.api_core import exceptions
 from google.genai import types
-
 from utils_search import DEFAULT_LLM
 
 load_dotenv()
@@ -32,7 +32,7 @@ def call_llm(prompt: str, model=model) -> str:
                 ]
             ),
         ).text
-    except Exception as e:
+    except exceptions.GoogleAPIError as e:
         response = ""
         print(f"{e} - Retrying LLM call...")
         time.sleep(5)
