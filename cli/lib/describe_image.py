@@ -18,6 +18,7 @@ if not api_key:
 client = genai.Client(api_key=api_key)
 model = DEFAULT_LLM
 
+
 def describe_image(prompt: str, parts) -> GenerateContentResponse:
     try:
         response = client.models.generate_content(
@@ -71,4 +72,3 @@ def command_describe_image(path_image: str, query: str) -> None:
         print(f"Rewritten query: {response.text.strip()}")
     if response.usage_metadata is not None:
         print(f"Total tokens:    {response.usage_metadata.total_token_count}")
-

@@ -17,7 +17,7 @@ This project is largely for my own personal use and learning, use at your own ri
 
 2) Clone the repository locally and install dependencies:
     
-    ```python
+    ```shell
     git clone <URL>
     cd rag-search
     uv sync

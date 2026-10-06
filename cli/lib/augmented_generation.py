@@ -2,6 +2,7 @@ from .llm import call_llm, enhance_query
 from .utils_search import load_movies, DEFAULT_SEARCH_LIMIT
 from .hybrid_search import HybridSearch
 
+
 def rag(query: str, docs: str):
     prompt = f"""You are a RAG agent for Hoopla, a movie streaming service.
     Your task is to provide a natural-language answer to the user's query based on documents retrieved during search.
@@ -15,7 +16,8 @@ def rag(query: str, docs: str):
     Answer:"""
     return call_llm(prompt)
 
-def search(query: str, limit: int=DEFAULT_SEARCH_LIMIT) -> dict:
+
+def search(query: str, limit: int = DEFAULT_SEARCH_LIMIT) -> dict:
     query_original = query
 
     documents: dict = load_movies()
@@ -48,7 +50,7 @@ def format_context(search_results: dict) -> tuple[str, str]:
     search_results_docs = []
 
     for i, res in search_results.items():
-        search_results_titles.append(f"- {res["title"]}")
+        search_results_titles.append(f"- {res['title']}")
         search_results_docs.append(f"""ID: {i}. Title:{res["title"]}
         Description: {res["document"]}""")
 
@@ -66,6 +68,7 @@ def command_rag(query: str):
     print(f"RAG Response:\n{results_rag}")
     return
 
+
 def summarize(query: str, results: str) -> str:
     prompt = f"""Provide information useful to the query below by synthesizing
     data from multiple search results in detail. The goal is to provide
@@ -82,7 +85,8 @@ Search results:
 Provide a comprehensive 3–4 sentence answer that combines information from multiple sources:"""
     return call_llm(prompt)
 
-def command_summarize(query: str, limit: int=DEFAULT_SEARCH_LIMIT) -> None:
+
+def command_summarize(query: str, limit: int = DEFAULT_SEARCH_LIMIT) -> None:
     search_results = search(query, limit)
     titles, docs = format_context(search_results)
     summary = summarize(query, docs)
@@ -91,6 +95,7 @@ def command_summarize(query: str, limit: int=DEFAULT_SEARCH_LIMIT) -> None:
     print("LLM Summary:")
     print(summary)
     return
+
 
 def cite(query: str, documents: str) -> str:
     prompt = f"""Answer the query below and give information based on the provided documents.
@@ -114,7 +119,7 @@ def cite(query: str, documents: str) -> str:
     return call_llm(prompt)
 
 
-def command_citations(query: str, limit: int=DEFAULT_SEARCH_LIMIT) -> None:
+def command_citations(query: str, limit: int = DEFAULT_SEARCH_LIMIT) -> None:
     search_results = search(query, limit)
     titles, docs = format_context(search_results)
     answer = cite(query, docs)
@@ -123,6 +128,7 @@ def command_citations(query: str, limit: int=DEFAULT_SEARCH_LIMIT) -> None:
     print("LLM Answer:")
     print(answer)
     return
+
 
 def ask_question(question: str, context: str) -> str:
     prompt = f"""Answer the user's question based on the provided movies that are available on Hoopla, a streaming service.
@@ -142,7 +148,7 @@ def ask_question(question: str, context: str) -> str:
     return call_llm(prompt)
 
 
-def command_question(question: str, limit: int=DEFAULT_SEARCH_LIMIT) -> None:
+def command_question(question: str, limit: int = DEFAULT_SEARCH_LIMIT) -> None:
     search_results = search(question, limit)
     titles, docs = format_context(search_results)
     answer = ask_question(question, docs)

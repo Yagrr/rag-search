@@ -18,13 +18,12 @@ from lib.utils_search import (
 
 
 class SemanticSearch:
-    def __init__(self, model_name: str = DEFAULT_MODEL)-> None:
+    def __init__(self, model_name: str = DEFAULT_MODEL) -> None:
         self.model = SentenceTransformer(model_name)
         self.embeddings = None
         self.documents = None
         self.document_map = {}
         self.path_embeddings = os.path.join(PATH_CACHE, "movie_embeddings.npy")
-
 
     def generate_embedding(self, text: str):
         if text.isspace() or text == "":
@@ -60,16 +59,20 @@ class SemanticSearch:
 
     def search(self, query: str, limit: int = DEFAULT_SEARCH_LIMIT):
         if self.embeddings is None or self.documents is None:
-            raise ValueError("No embeddings loaded. Call `load_or_create_embeddings` first.")
+            raise ValueError(
+                "No embeddings loaded. Call `load_or_create_embeddings` first."
+            )
 
         embedding_query = self.generate_embedding(query)
         cos_sim_query_doc = []
 
-        for doc, doc_embedding in zip(self.documents,self.embeddings):
+        for doc, doc_embedding in zip(self.documents, self.embeddings):
             cos_sim = cosine_similarity(embedding_query, doc_embedding)
             cos_sim_query_doc.append((cos_sim, doc))
 
-        sorted_cos_sim = sorted(cos_sim_query_doc, key=lambda item: item[0], reverse=True)
+        sorted_cos_sim = sorted(
+            cos_sim_query_doc, key=lambda item: item[0], reverse=True
+        )
         results = []
         for cos_sim in sorted_cos_sim:
             results.append(
@@ -145,7 +148,11 @@ def embed_query_text(query: str):
     print(f"Shape: {embedding.shape}")
 
 
-def chunking_fixed_size(text: str, chunk_size:int = DEFAULT_CHUNK_SIZE, overlap: int = DEFAULT_CHUNK_WORDS_OVERLAP) -> list[str]:
+def chunking_fixed_size(
+    text: str,
+    chunk_size: int = DEFAULT_CHUNK_SIZE,
+    overlap: int = DEFAULT_CHUNK_WORDS_OVERLAP,
+) -> list[str]:
     words = text.split()
     chunks = []
     words_count = len(words)
@@ -162,7 +169,11 @@ def chunking_fixed_size(text: str, chunk_size:int = DEFAULT_CHUNK_SIZE, overlap:
     return chunks
 
 
-def chunk_text(text: str, chunk_size:int = DEFAULT_CHUNK_SIZE, overlap: int = DEFAULT_CHUNK_WORDS_OVERLAP) -> None:
+def chunk_text(
+    text: str,
+    chunk_size: int = DEFAULT_CHUNK_SIZE,
+    overlap: int = DEFAULT_CHUNK_WORDS_OVERLAP,
+) -> None:
     chunks = chunking_fixed_size(text, chunk_size, overlap)
     print(f"Chunking {len(text)} characters")
     for i, chunk in enumerate(chunks):
@@ -179,7 +190,11 @@ def preprocess_text(chunk: str) -> list[str]:
     return [sentence.strip() for sentence in sentences if sentence.strip() != ""]
 
 
-def chunking_semantic(text: str, max_chunk_size: int = DEFAULT_SEMANTIC_CHUNK_SIZE, overlap: int = DEFAULT_SEMANTIC_CHUNK_OVERLAP) -> list[str]:
+def chunking_semantic(
+    text: str,
+    max_chunk_size: int = DEFAULT_SEMANTIC_CHUNK_SIZE,
+    overlap: int = DEFAULT_SEMANTIC_CHUNK_OVERLAP,
+) -> list[str]:
     sentences = preprocess_text(text)
     sentences = re.split(r"(?<=[.!?])\s+", " ".join(sentences))
     chunks = []
@@ -198,7 +213,12 @@ def chunking_semantic(text: str, max_chunk_size: int = DEFAULT_SEMANTIC_CHUNK_SI
             i += max_chunk_size
     return chunks
 
-def chunk_text_semantically(text: str, max_chunk_size: int = DEFAULT_SEMANTIC_CHUNK_SIZE, overlap: int = DEFAULT_SEMANTIC_CHUNK_OVERLAP) -> None:
+
+def chunk_text_semantically(
+    text: str,
+    max_chunk_size: int = DEFAULT_SEMANTIC_CHUNK_SIZE,
+    overlap: int = DEFAULT_SEMANTIC_CHUNK_OVERLAP,
+) -> None:
     chunks = chunking_semantic(text, max_chunk_size, overlap)
     print(f"Semantically chunking {len(text)} characters")
     for i, chunk in enumerate(chunks):
@@ -206,7 +226,7 @@ def chunk_text_semantically(text: str, max_chunk_size: int = DEFAULT_SEMANTIC_CH
 
 
 class ChunkedSemanticSearch(SemanticSearch):
-    def __init__(self, model_name = DEFAULT_MODEL) -> None:
+    def __init__(self, model_name=DEFAULT_MODEL) -> None:
         super().__init__(model_name)
         self.chunk_embeddings = None
         self.chunk_metadata = None
@@ -223,7 +243,7 @@ class ChunkedSemanticSearch(SemanticSearch):
 
         all_chunks = []
         all_chunk_metadata = []
-            
+
         for idx, doc in enumerate(documents):
             text = doc.get("description", "")
             if not text.strip():
@@ -251,7 +271,11 @@ class ChunkedSemanticSearch(SemanticSearch):
         os.makedirs(os.path.dirname(self.path_chunk_embeddings), exist_ok=True)
         np.save(self.path_chunk_embeddings, self.chunk_embeddings)
         with open(self.path_chunk_metadata, "w") as f:
-            json.dump({"chunks": all_chunk_metadata, "total_chunks": len(all_chunks)}, f, indent=2)
+            json.dump(
+                {"chunks": all_chunk_metadata, "total_chunks": len(all_chunks)},
+                f,
+                indent=2,
+            )
 
         return self.chunk_embeddings
 
@@ -261,7 +285,9 @@ class ChunkedSemanticSearch(SemanticSearch):
         for doc in documents:
             self.document_map[doc["id"]] = doc
 
-        if os.path.exists(self.path_chunk_embeddings) and os.path.exists(self.path_chunk_metadata):
+        if os.path.exists(self.path_chunk_embeddings) and os.path.exists(
+            self.path_chunk_metadata
+        ):
             self.chunk_embeddings = np.load(self.path_chunk_embeddings)
             with open(self.path_chunk_metadata, "r") as f:
                 data = json.load(f)
@@ -270,21 +296,28 @@ class ChunkedSemanticSearch(SemanticSearch):
 
         return self.build_chunk_embeddings(documents)
 
-
     def search_chunks(self, query: str, limit: int = 10) -> list[dict]:
         """
-            Perform chunked semantic chunk search. 
-            Returns a list of dictionary where each item corresponds to a
-            document, with id, title, a 100 character summary of the document,
-            the semantic search score, and the document metadata. 
+        Perform chunked semantic chunk search.
+        Returns a list of dictionary where each item corresponds to a
+        document, with id, title, a 100 character summary of the document,
+        the semantic search score, and the document metadata.
         """
-        if self.chunk_embeddings is None or self.chunk_metadata is None or self.documents is None:
-            raise ValueError("No chunk embeddings loaded. Call `load_or_create_embeddings` first.")
+        if (
+            self.chunk_embeddings is None
+            or self.chunk_metadata is None
+            or self.documents is None
+        ):
+            raise ValueError(
+                "No chunk embeddings loaded. Call `load_or_create_embeddings` first."
+            )
 
         embedding_query = self.generate_embedding(query)
         chunk_scores: list[dict] = []
         doc_index_to_score = {}
-        for metadata, embedding_chunk in zip(self.chunk_metadata, self.chunk_embeddings):
+        for metadata, embedding_chunk in zip(
+            self.chunk_metadata, self.chunk_embeddings
+        ):
             cosine_score = cosine_similarity(embedding_query, embedding_chunk)
             chunk_scores.append(
                 {
@@ -304,8 +337,10 @@ class ChunkedSemanticSearch(SemanticSearch):
                 or score > current_score
             ):
                 doc_index_to_score[movie_idx] = score
-            
-        sorted_doc_index_to_score = sorted(doc_index_to_score.items(), key=lambda item: item[1], reverse=True)
+
+        sorted_doc_index_to_score = sorted(
+            doc_index_to_score.items(), key=lambda item: item[1], reverse=True
+        )
         results = []
         for id_scores in sorted_doc_index_to_score:
             doc_id = id_scores[0]
@@ -319,7 +354,7 @@ class ChunkedSemanticSearch(SemanticSearch):
                     "title": title,
                     "document": document[:100],
                     "score": round(score, SCORE_PRECISION),
-                    "metadata": metadata or {}
+                    "metadata": metadata or {},
                 }
             )
             if len(results) >= limit:

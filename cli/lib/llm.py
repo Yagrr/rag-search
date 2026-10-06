@@ -17,7 +17,8 @@ if not api_key:
 client = genai.Client(api_key=api_key)
 model = DEFAULT_LLM
 
-def call_llm(prompt: str, model = model) -> str:
+
+def call_llm(prompt: str, model=model) -> str:
     try:
         response = client.models.generate_content(
             model=model,
@@ -39,6 +40,7 @@ def call_llm(prompt: str, model = model) -> str:
 
     return response if response else ""
 
+
 def spell_correct(query: str) -> str:
     prompt = f"""Fix any spelling errors in the user-provided movie search query below.
     Correct only clear, high-confidence typos. Do not rewrite, add, remove, or reorder words.
@@ -46,10 +48,11 @@ def spell_correct(query: str) -> str:
     If there are no spelling errors, or if you're unsure, output the original query unchanged.
     Output only the final query text, nothing else.
     User query: "{query}"
-    """ 
+    """
     response = call_llm(prompt)
     query_spell_checked = (response or "").strip().strip('"')
     return query_spell_checked if query_spell_checked else query
+
 
 def rewrite_query(query: str) -> str:
     prompt = f"""Rewrite the user-provided movie search query below to be more specific and searchable.
@@ -74,6 +77,7 @@ def rewrite_query(query: str) -> str:
     rewritten = (response or "").strip().strip('"')
     return rewritten if rewritten else query
 
+
 def expand_query(query: str) -> str:
     prompt = f"""Expand the user-provided movie search query below with related terms.
 
@@ -94,6 +98,7 @@ def expand_query(query: str) -> str:
     expanded_terms = (response or "").strip().strip('"')
     return f"{query} {expanded_terms}".strip()
 
+
 def enhance_query(query: str, method: str = "spell") -> str:
     match method:
         case "spell":
@@ -104,6 +109,7 @@ def enhance_query(query: str, method: str = "spell") -> str:
             return expand_query(query)
         case _:
             return query
+
 
 def evaluate_results(query, formatted_results):
     query = f"""Rate how relevant each result is to this query on a 0-3 scale:

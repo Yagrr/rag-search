@@ -9,10 +9,10 @@ from nltk.stem import PorterStemmer
 from .utils_search import (
     BM25_K1,
     BM25_B,
-    PATH_CACHE, 
-    DEFAULT_SEARCH_LIMIT, 
-    load_stopwords, 
-    load_movies
+    PATH_CACHE,
+    DEFAULT_SEARCH_LIMIT,
+    load_stopwords,
+    load_movies,
 )
 
 
@@ -54,7 +54,6 @@ class InvertedIndex:
         for token in set(tokens):
             self.index[token].add(doc_id)
         return
-
 
     def build(self) -> None:
         """
@@ -154,7 +153,7 @@ class InvertedIndex:
 
         count_total_docs = len(self.docmap)
         count_docs_with_term = len(self.get_documents(term))
-        idf =  math.log((count_total_docs + 1) / (count_docs_with_term + 1))
+        idf = math.log((count_total_docs + 1) / (count_docs_with_term + 1))
         return idf
 
     def get_tfidf(self, doc_id: int, term: str) -> float:
@@ -175,7 +174,9 @@ class InvertedIndex:
         else:
             return length_all_documents / number_of_documents
 
-    def get_bm25_tf(self, doc_id: int, term: str, k1: float = BM25_K1, b: float = BM25_B) -> float:
+    def get_bm25_tf(
+        self, doc_id: int, term: str, k1: float = BM25_K1, b: float = BM25_B
+    ) -> float:
         """
         Get BM25 saturated term frequency for a given term and doc_id. Serves
         as an updated version from standard TF to avoid high scoring words that
@@ -206,20 +207,22 @@ class InvertedIndex:
         laplace_smoothing = 0.5
         bm25_idf = math.log(
             (count_total_docs - count_docs_with_term + laplace_smoothing)
-            / (count_docs_with_term + laplace_smoothing) 
+            / (count_docs_with_term + laplace_smoothing)
             + 1
         )
         return bm25_idf
-    
+
     def get_bm25(self, doc_id: int, term: str) -> float:
         bm25_tf = self.get_bm25_tf(doc_id, term)
         bm25_idf = self.get_bm25_idf(term)
         return bm25_tf * bm25_idf
 
-    def search_bm25(self, query: str, limit: int = DEFAULT_SEARCH_LIMIT) -> dict[int, float]:
+    def search_bm25(
+        self, query: str, limit: int = DEFAULT_SEARCH_LIMIT
+    ) -> dict[int, float]:
         """
         Returns doc_id and its BM25 score given an input query.
-        
+
         Tokenizes query, calculates the BM25 score for each token for each
         indexed doc_id and appends its score and document ID to a scores dictionary.
         Sort scores dictionary to find the top most relevant document, then
@@ -236,7 +239,9 @@ class InvertedIndex:
                 doc_id_total_bm25 += bm25
             scores[doc_id] = doc_id_total_bm25
 
-        scores_sorted_desc = dict(sorted(scores.items(), key=lambda item: item[1], reverse=True))
+        scores_sorted_desc = dict(
+            sorted(scores.items(), key=lambda item: item[1], reverse=True)
+        )
 
         for score in scores_sorted_desc.items():
             results.append(score)
@@ -247,6 +252,7 @@ class InvertedIndex:
 
 
 # ======== Main command  ========
+
 
 def create_InvertedIndex() -> InvertedIndex:
     index = InvertedIndex()
@@ -265,9 +271,11 @@ def command_build() -> None:
     print(f"Save docmap.pkl to disk at : {index.path_docmap}")
     print(f"Save term_frequencies.pkl to disk at : {index.path_term_frequencies}")
     print(f"Save path_lenghts.pkl to disk at : {index.path_doc_lengths}")
-    
 
-def command_search(query: str, field_to_search: str = "title", limit: int = DEFAULT_SEARCH_LIMIT) -> list[dict]:
+
+def command_search(
+    query: str, field_to_search: str = "title", limit: int = DEFAULT_SEARCH_LIMIT
+) -> list[dict]:
     """
     Command for querying words in cached inverted index data.
     Takes a string query, and an integer limit for how many results should be fetched.
@@ -304,23 +312,27 @@ def command_tfidf(doc_id: int, term: str):
     index = create_InvertedIndex()
     return index.get_tfidf(doc_id, term)
 
+
 def command_bm25_tf(doc_id: int, term: str, k1: float) -> float:
     index = create_InvertedIndex()
     return index.get_bm25_tf(doc_id, term, k1)
+
 
 def command_bm25_idf(term: str) -> float:
     index = create_InvertedIndex()
     return index.get_bm25_idf(term)
 
-def command_bm25_search(query: str, limit: int) -> tuple[list[dict],  dict[int, float]]:
+
+def command_bm25_search(query: str, limit: int) -> tuple[list[dict], dict[int, float]]:
     matches = []
     index = create_InvertedIndex()
-    scores = index.search_bm25(query, limit) 
+    scores = index.search_bm25(query, limit)
 
     for id in scores.keys():
         matches.append(index.docmap[id])
 
     return matches, scores
+
 
 # ======== Pre-processing  ========
 

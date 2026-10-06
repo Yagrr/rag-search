@@ -10,13 +10,16 @@ from .llm import call_llm
 from .utils_search import (
     PATH_LOGGER_CONFIG,
     DEFAULT_MODEL_PROMPTING_SECONDS_DELAY,
-    DEFAULT_CROSS_ENCODER
+    DEFAULT_CROSS_ENCODER,
 )
 
 logging.config.fileConfig(PATH_LOGGER_CONFIG)
 logger = logging.getLogger(__name__)
 
-def rerank_results(query: str, results: dict, rerank_method: str | None, limit: int) -> dict:
+
+def rerank_results(
+    query: str, results: dict, rerank_method: str | None, limit: int
+) -> dict:
     print(f"Re-ranking documents ({rerank_method})")
     match rerank_method:
         case "individual":
@@ -26,7 +29,7 @@ def rerank_results(query: str, results: dict, rerank_method: str | None, limit: 
             for id in results:
                 # Update score
                 results[id]["rerank_score"] = rerank_individual(query, results[id])
-                time.sleep(DEFAULT_MODEL_PROMPTING_SECONDS_DELAY * randint(1,3))
+                time.sleep(DEFAULT_MODEL_PROMPTING_SECONDS_DELAY * randint(1, 3))
                 print("...")
 
             results_reranked_sorted = dict(
@@ -37,7 +40,7 @@ def rerank_results(query: str, results: dict, rerank_method: str | None, limit: 
                 )
             )
 
-            if logger.isEnabledFor(logging.DEBUG): 
+            if logger.isEnabledFor(logging.DEBUG):
                 logger.debug("== RRF search results after individual re-ranking ==\n")
                 for i, result in enumerate(dict(results_reranked_sorted).values()):
                     logger.debug(f"""
@@ -49,7 +52,7 @@ def rerank_results(query: str, results: dict, rerank_method: str | None, limit: 
                     """)
 
             return results_reranked_sorted[:limit]
-        
+
         case "batch":
             """
                 Re-rank documents in batches using LLM.
@@ -59,7 +62,18 @@ def rerank_results(query: str, results: dict, rerank_method: str | None, limit: 
             # Get string of doc list, ID, title, summary
             doc_list_str = []
             for id in results:
-                doc_list_str.extend(["ID:", id, "\n", "title:", results[id]["title"], "description:", results[id]["document"], "\n"])
+                doc_list_str.extend(
+                    [
+                        "ID:",
+                        id,
+                        "\n",
+                        "title:",
+                        results[id]["title"],
+                        "description:",
+                        results[id]["document"],
+                        "\n",
+                    ]
+                )
 
             doc_list_str = " ".join([str(doc) for doc in doc_list_str])
 
@@ -70,13 +84,10 @@ def rerank_results(query: str, results: dict, rerank_method: str | None, limit: 
                 results[id]["rerank_rank"] = rank
 
             results_reranked_sorted = dict(
-                sorted(
-                    results.items(),
-                    key=lambda item: item[1].get("rerank_rank")
-                )
+                sorted(results.items(), key=lambda item: item[1].get("rerank_rank"))
             )
 
-            if logger.isEnabledFor(logging.DEBUG): 
+            if logger.isEnabledFor(logging.DEBUG):
                 logger.debug("== RRF search results after batch re-ranking ==\n")
                 for i, result in enumerate(dict(results_reranked_sorted).values()):
                     logger.debug(f"""
@@ -93,7 +104,9 @@ def rerank_results(query: str, results: dict, rerank_method: str | None, limit: 
             pairs = []
             for id in results:
                 doc = results[id]
-                pairs.append([query, f"{doc.get('title', '')} - {doc.get('document', '')}"])
+                pairs.append(
+                    [query, f"{doc.get('title', '')} - {doc.get('document', '')}"]
+                )
             scores = rerank_crossencoder(pairs)
 
             for i, id in enumerate(results):
@@ -107,8 +120,10 @@ def rerank_results(query: str, results: dict, rerank_method: str | None, limit: 
                 )
             )
 
-            if logger.isEnabledFor(logging.DEBUG): 
-                logger.debug("== RRF search results after cross-encoder re-ranking ==\n")
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.debug(
+                    "== RRF search results after cross-encoder re-ranking ==\n"
+                )
                 for i, result in enumerate(dict(results_reranked_sorted).values()):
                     logger.debug(f"""
                     == Before re-ranking ==
@@ -122,6 +137,7 @@ def rerank_results(query: str, results: dict, rerank_method: str | None, limit: 
 
         case _:
             return results
+
 
 def rerank_individual(query: str, doc: dict) -> float:
     prompt = f"""Rate how well this movie matches the search query.
@@ -139,7 +155,7 @@ def rerank_individual(query: str, doc: dict) -> float:
         Score:
         """
 
-    print(f"Reranking {doc.get("title", "")} - score:")
+    print(f"Reranking {doc.get('title', '')} - score:")
     try:
         score = call_llm(prompt)
         score = score.strip().strip('"')
@@ -149,6 +165,7 @@ def rerank_individual(query: str, doc: dict) -> float:
     score = float(score)
     print(score)
     return score
+
 
 def rerank_batch(query: str, doc_list_str: str) -> str:
     prompt = f"""Rank the movies listed below by relevance to the following search query.
@@ -171,6 +188,7 @@ def rerank_batch(query: str, doc_list_str: str) -> str:
         """
     result_json = call_llm(prompt)
     return result_json
+
 
 def rerank_crossencoder(pairs: list[list[str]]):
     cross_encoder = CrossEncoder(DEFAULT_CROSS_ENCODER)

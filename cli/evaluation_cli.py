@@ -4,14 +4,15 @@ import json
 from lib.utils_search import load_movies, PATH_EVALUATION_DATASET
 from lib.hybrid_search import HybridSearch
 
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Search Evaluation CLI")
     parser.add_argument(
         "--limit",
-    type=int,
-    default=5,
-    help="Number of results to evaluate (k for precision@k, recall@k)",
-)
+        type=int,
+        default=5,
+        help="Number of results to evaluate (k for precision@k, recall@k)",
+    )
 
     args = parser.parse_args()
     limit = args.limit
@@ -26,7 +27,9 @@ def main() -> None:
         k = 60
         rerank_method = None
         search_instance = HybridSearch(documents)
-        search_results: dict = search_instance.rrf_search(query, k, limit, rerank_method)
+        search_results: dict = search_instance.rrf_search(
+            query, k, limit, rerank_method
+        )
         titles_retrieved: list[str] = []
         titles_retrieved_relevant: list[str] = []
         for id in search_results:
@@ -35,9 +38,11 @@ def main() -> None:
                 titles_retrieved_relevant.append(title)
             titles_retrieved.append(title)
 
-        if titles_retrieved: 
+        if titles_retrieved:
             # precision = relevant_retrieved / total_retrieved
-            precision_score: float = len(titles_retrieved_relevant) / len(titles_retrieved)
+            precision_score: float = len(titles_retrieved_relevant) / len(
+                titles_retrieved
+            )
             # recall = relevant_retrieved / total_relevant
             total_relevant: int = len(test_case["relevant_docs"])
             recall_score: float = len(titles_retrieved_relevant) / total_relevant
@@ -48,7 +53,9 @@ def main() -> None:
         if (precision_score + recall_score) == 0:
             f1_score: float = 0.0
         else:
-            f1_score: float = 2 * (precision_score * recall_score) / (precision_score +  recall_score)
+            f1_score: float = (
+                2 * (precision_score * recall_score) / (precision_score + recall_score)
+            )
 
         print(f"k={limit}\n")
         print(f"- Query: {query}")

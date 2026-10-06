@@ -11,6 +11,7 @@ from lib.utils_search import (
     DEFAULT_RRF_SEARCH_K,
 )
 
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Hybrid Search CLI")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
@@ -22,20 +23,48 @@ def main() -> None:
         "values", type=float, nargs="*", help="List of values separated by spaces"
     )
 
-    weighted_search_parser = subparsers.add_parser("weighted-search", help="Perform a hybrid search combining BM25 and semantic search with weighting between the two")
+    weighted_search_parser = subparsers.add_parser(
+        "weighted-search",
+        help="Perform a hybrid search combining BM25 and semantic search with weighting between the two",
+    )
     weighted_search_parser.add_argument("query", help="Text to query")
-    weighted_search_parser.add_argument("--alpha", type=float, default=DEFAULT_WEIGHTED_SEARCH_ALPHA, help="Alpha weighting between BM25/semantic search")
-    weighted_search_parser.add_argument("--limit", type=int, default=DEFAULT_SEARCH_LIMIT, help="Limit number of search results")
+    weighted_search_parser.add_argument(
+        "--alpha",
+        type=float,
+        default=DEFAULT_WEIGHTED_SEARCH_ALPHA,
+        help="Alpha weighting between BM25/semantic search",
+    )
+    weighted_search_parser.add_argument(
+        "--limit",
+        type=int,
+        default=DEFAULT_SEARCH_LIMIT,
+        help="Limit number of search results",
+    )
 
-    rrf_search_parser = subparsers.add_parser("rrf-search", help="Perform a hybrid search using Reciprocal Rank Fusion")
+    rrf_search_parser = subparsers.add_parser(
+        "rrf-search", help="Perform a hybrid search using Reciprocal Rank Fusion"
+    )
     rrf_search_parser.add_argument("query", help="Text to query")
     rrf_search_parser.add_argument("-k", type=int, default=DEFAULT_RRF_SEARCH_K)
     rrf_search_parser.add_argument("--limit", type=int, default=DEFAULT_SEARCH_LIMIT)
-    rrf_search_parser.add_argument("--enhance", type=str, choices=["spell", "rewrite", "expand"], help="Query enhancement method",)
-    rrf_search_parser.add_argument("--rerank-method", type=str, choices=["individual", "batch", "cross_encoder"], help="Document reranking method")
+    rrf_search_parser.add_argument(
+        "--enhance",
+        type=str,
+        choices=["spell", "rewrite", "expand"],
+        help="Query enhancement method",
+    )
+    rrf_search_parser.add_argument(
+        "--rerank-method",
+        type=str,
+        choices=["individual", "batch", "cross_encoder"],
+        help="Document reranking method",
+    )
     rrf_search_parser.add_argument("--debug", action="store_true", help="Activate logs")
-    rrf_search_parser.add_argument("--evaluate", action="store_true", help="Evaluate with LLM calls to determine if a result is relevant")
-
+    rrf_search_parser.add_argument(
+        "--evaluate",
+        action="store_true",
+        help="Evaluate with LLM calls to determine if a result is relevant",
+    )
 
     args = parser.parse_args()
 
@@ -44,7 +73,15 @@ def main() -> None:
             command_weighted_search(args.query, args.alpha, args.limit)
 
         case "rrf-search":
-            command_rrf_search(args.query, args.k, args.enhance, args.limit, args.rerank_method, args.debug, args.evaluate)
+            command_rrf_search(
+                args.query,
+                args.k,
+                args.enhance,
+                args.limit,
+                args.rerank_method,
+                args.debug,
+                args.evaluate,
+            )
 
         case "normalize":
             scores_normalized = normalize(args.values)
