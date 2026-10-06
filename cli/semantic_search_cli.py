@@ -3,24 +3,23 @@
 import argparse
 
 from lib.semantic_search import (
-    verify_model,
-    verify_embedding,
-    embed_text,
-    embed_query_text,
-    command_semantic_search,
     chunk_text,
     chunk_text_semantically,
-    embed_chunks,
     command_chunked_semantic_search,
+    command_semantic_search,
+    embed_chunks,
+    embed_query_text,
+    embed_text,
+    verify_embedding,
+    verify_model,
 )
-
 from lib.utils_search import (
-    DEFAULT_MODEL,
-    DEFAULT_SEARCH_LIMIT,
     DEFAULT_CHUNK_SIZE,
     DEFAULT_CHUNK_WORDS_OVERLAP,
-    DEFAULT_SEMANTIC_CHUNK_SIZE,
+    DEFAULT_MODEL,
+    DEFAULT_SEARCH_LIMIT,
     DEFAULT_SEMANTIC_CHUNK_OVERLAP,
+    DEFAULT_SEMANTIC_CHUNK_SIZE,
 )
 
 

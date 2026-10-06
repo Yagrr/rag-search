@@ -1,6 +1,5 @@
-import os
 import json
-
+import os
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 PATH_DATA = os.path.join(PROJECT_ROOT, "data", "movies.json")

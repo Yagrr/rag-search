@@ -1,17 +1,16 @@
 import os
 
 import numpy as np
-from PIL import Image
-from sentence_transformers import SentenceTransformer
-
+from lib.semantic_search import cosine_similarity
 from lib.utils_search import (
     DEFAULT_MULTIMODAL_SEARCH_MODEL,
     DEFAULT_SEARCH_LIMIT,
-    load_movies,
     PATH_CACHE,
     PROJECT_ROOT,
+    load_movies,
 )
-from lib.semantic_search import cosine_similarity
+from PIL import Image
+from sentence_transformers import SentenceTransformer
 
 
 class MultimodalSearch:

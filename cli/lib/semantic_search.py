@@ -1,20 +1,20 @@
+import json
 import os
 import re
-import json
-import numpy as np
-from sentence_transformers import SentenceTransformer
 
+import numpy as np
 from lib.utils_search import (
-    PATH_CACHE,
-    load_movies,
-    DEFAULT_MODEL,
-    DEFAULT_SEARCH_LIMIT,
     DEFAULT_CHUNK_SIZE,
     DEFAULT_CHUNK_WORDS_OVERLAP,
-    DEFAULT_SEMANTIC_CHUNK_SIZE,
+    DEFAULT_MODEL,
+    DEFAULT_SEARCH_LIMIT,
     DEFAULT_SEMANTIC_CHUNK_OVERLAP,
+    DEFAULT_SEMANTIC_CHUNK_SIZE,
+    PATH_CACHE,
     SCORE_PRECISION,
+    load_movies,
 )
+from sentence_transformers import SentenceTransformer
 
 
 class SemanticSearch:

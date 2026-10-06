@@ -1,6 +1,6 @@
-from .llm import call_llm, enhance_query
-from .utils_search import load_movies, DEFAULT_SEARCH_LIMIT
 from .hybrid_search import HybridSearch
+from .llm import call_llm, enhance_query
+from .utils_search import DEFAULT_SEARCH_LIMIT, load_movies
 
 
 def rag(query: str, docs: str):
@@ -66,7 +66,6 @@ def command_rag(query: str):
     print("Search Results:")
     print(titles)
     print(f"RAG Response:\n{results_rag}")
-    return
 
 
 def summarize(query: str, results: str) -> str:
@@ -94,7 +93,6 @@ def command_summarize(query: str, limit: int = DEFAULT_SEARCH_LIMIT) -> None:
     print(titles)
     print("LLM Summary:")
     print(summary)
-    return
 
 
 def cite(query: str, documents: str) -> str:
@@ -127,7 +125,6 @@ def command_citations(query: str, limit: int = DEFAULT_SEARCH_LIMIT) -> None:
     print(titles)
     print("LLM Answer:")
     print(answer)
-    return
 
 
 def ask_question(question: str, context: str) -> str:
@@ -156,4 +153,3 @@ def command_question(question: str, limit: int = DEFAULT_SEARCH_LIMIT) -> None:
     print(titles)
     print("Answer:")
     print(answer)
-    return

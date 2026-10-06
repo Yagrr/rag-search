@@ -1,7 +1,7 @@
 import argparse
 
+from lib.multimodal_search import command_image_search, verify_image_embedding
 from lib.utils_search import DEFAULT_SEARCH_LIMIT
-from lib.multimodal_search import verify_image_embedding, command_image_search
 
 
 def main() -> None:

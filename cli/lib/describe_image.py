@@ -1,14 +1,12 @@
+import mimetypes
 import os
 import time
-import mimetypes
 
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 from google.genai.types import GenerateContentResponse
-
 from utils_search import DEFAULT_LLM
-
 
 load_dotenv()
 api_key = os.environ.get("GEMINI_API_KEY")

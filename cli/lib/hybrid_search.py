@@ -1,24 +1,22 @@
-import os
 import logging
 import logging.config
+import os
 
 from .keyword_search import InvertedIndex
-from .semantic_search import ChunkedSemanticSearch
-from .utils_search import (
-    PATH_LOGGER_CONFIG,
-    load_movies,
-    DEFAULT_SEARCH_LIMIT,
-    SCORE_PRECISION,
-    DEFAULT_WEIGHTED_SEARCH_ALPHA,
-    DEFAULT_RRF_SEARCH_K,
-)
-
 from .llm import (
     enhance_query,
     evaluate_results,
 )
-
 from .rerank import rerank_results
+from .semantic_search import ChunkedSemanticSearch
+from .utils_search import (
+    DEFAULT_RRF_SEARCH_K,
+    DEFAULT_SEARCH_LIMIT,
+    DEFAULT_WEIGHTED_SEARCH_ALPHA,
+    PATH_LOGGER_CONFIG,
+    SCORE_PRECISION,
+    load_movies,
+)
 
 logging.config.fileConfig(PATH_LOGGER_CONFIG)
 logger = logging.getLogger(__name__)

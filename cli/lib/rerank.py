@@ -1,16 +1,16 @@
-import time
 import json
-from random import randint
 import logging
 import logging.config
+import time
+from random import randint
 
 from sentence_transformers import CrossEncoder
 
 from .llm import call_llm
 from .utils_search import (
-    PATH_LOGGER_CONFIG,
-    DEFAULT_MODEL_PROMPTING_SECONDS_DELAY,
     DEFAULT_CROSS_ENCODER,
+    DEFAULT_MODEL_PROMPTING_SECONDS_DELAY,
+    PATH_LOGGER_CONFIG,
 )
 
 logging.config.fileConfig(PATH_LOGGER_CONFIG)
@@ -26,7 +26,7 @@ def rerank_results(
             """
                 Re-rank documents using LLM.
             """
-            for id in results:
+            for id in results.items():
                 # Update score
                 results[id]["rerank_score"] = rerank_individual(query, results[id])
                 time.sleep(DEFAULT_MODEL_PROMPTING_SECONDS_DELAY * randint(1, 3))

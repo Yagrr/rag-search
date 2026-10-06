@@ -1,8 +1,8 @@
 import argparse
 import json
 
-from lib.utils_search import load_movies, PATH_EVALUATION_DATASET
 from lib.hybrid_search import HybridSearch
+from lib.utils_search import PATH_EVALUATION_DATASET, load_movies
 
 
 def main() -> None:

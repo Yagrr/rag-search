@@ -1,17 +1,16 @@
 import argparse
 
 from lib.keyword_search import (
-    command_search,
-    command_build,
-    command_tf,
-    command_idf,
-    command_tfidf,
+    command_bm25_idf,
     command_bm25_search,
     command_bm25_tf,
-    command_bm25_idf,
+    command_build,
+    command_idf,
+    command_search,
+    command_tf,
+    command_tfidf,
 )
-
-from lib.utils_search import BM25_K1, BM25_B, DEFAULT_SEARCH_LIMIT
+from lib.utils_search import BM25_B, BM25_K1, DEFAULT_SEARCH_LIMIT
 
 
 def main() -> None:

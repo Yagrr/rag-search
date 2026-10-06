@@ -1,14 +1,14 @@
 import argparse
 
 from lib.hybrid_search import (
-    normalize,
-    command_weighted_search,
     command_rrf_search,
+    command_weighted_search,
+    normalize,
 )
 from lib.utils_search import (
+    DEFAULT_RRF_SEARCH_K,
     DEFAULT_SEARCH_LIMIT,
     DEFAULT_WEIGHTED_SEARCH_ALPHA,
-    DEFAULT_RRF_SEARCH_K,
 )
 
 

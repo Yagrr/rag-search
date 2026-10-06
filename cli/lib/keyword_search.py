@@ -1,18 +1,18 @@
-import os
 import math
+import os
 import pickle
 import string
-from collections import defaultdict, Counter
+from collections import Counter, defaultdict
 
 from nltk.stem import PorterStemmer
 
 from .utils_search import (
-    BM25_K1,
     BM25_B,
-    PATH_CACHE,
+    BM25_K1,
     DEFAULT_SEARCH_LIMIT,
-    load_stopwords,
+    PATH_CACHE,
     load_movies,
+    load_stopwords,
 )
 
 
@@ -53,7 +53,6 @@ class InvertedIndex:
             self.term_frequencies[doc_id][token] += 1
         for token in set(tokens):
             self.index[token].add(doc_id)
-        return
 
     def build(self) -> None:
         """
@@ -73,7 +72,6 @@ class InvertedIndex:
             self.docmap[doc_id] = doc
             self.__add_document(doc_id, doc_info)
             print(f"Added: {doc_id}. {doc[field_1]}")
-        return
 
     def save_cache(self) -> None:
         """

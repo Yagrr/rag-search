@@ -1,11 +1,12 @@
 import argparse
-from lib.utils_search import DEFAULT_SEARCH_LIMIT
+
 from lib.augmented_generation import (
-    command_rag,
-    command_summarize,
     command_citations,
     command_question,
+    command_rag,
+    command_summarize,
 )
+from lib.utils_search import DEFAULT_SEARCH_LIMIT
 
 
 def main() -> None:
