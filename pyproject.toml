@@ -13,3 +13,13 @@ dependencies = [
     "python-dotenv>=1.2.2",
     "sentence-transformers>=5.4.1",
 ]
+[tool.ruff.lint]
+select = [
+  "E",
+  "F",
+  "UP",
+  "B",
+  "SIM",
+  "I",
+]
+ignore = ["E501"]
