@@ -58,7 +58,7 @@ class HybridSearch:
         scores_semantic_norm = normalize(scores_semantic)
 
         # map values back to ID
-        for id, bm25_norm in zip(res_bm25, scores_bm25_norm):
+        for id, bm25_norm in zip(res_bm25, scores_bm25_norm, strict=True):
             res_bm25.update({id: bm25_norm})
 
         for i in range(len(res_semantic)):
@@ -128,7 +128,7 @@ class HybridSearch:
         scores_semantic_norm = normalize(scores_semantic)
 
         # map values back to ID
-        for id, bm25_norm in zip(res_bm25, scores_bm25_norm):
+        for id, bm25_norm in zip(res_bm25, scores_bm25_norm, strict=True):
             res_bm25.update({id: bm25_norm})
 
         for i in range(len(res_semantic)):
@@ -167,7 +167,7 @@ class HybridSearch:
 
             res_hybrid[id].update({"rank_semantic": i})
 
-        for id in res_hybrid:
+        for id, _ in res_hybrid:
             rank_bm25 = res_hybrid[id]["rank_bm25"]
             rank_semantic = res_hybrid[id]["rank_semantic"]
             res_hybrid[id].update(
@@ -186,7 +186,7 @@ class HybridSearch:
 
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("== RRF search results before re-ranking ==\n")
-            for i, result in enumerate(dict(res_hybrid_sorted).values()):
+            for _i, result in enumerate(dict(res_hybrid_sorted).values()):
                 logger.debug(f"""
                 == Before re-ranking ==
                 Limit: {limit} - (check if scores are less than limit to see if they would be filtered out)
@@ -281,7 +281,7 @@ def command_rrf_search(
     if logger.isEnabledFor(logging.DEBUG):
         print("Logging level: debug")
         logger.debug("== RRF search final results ==\n")
-        for i, result in enumerate(results.values()):
+        for _i, result in enumerate(results.values()):
             logger.debug(f"""
             == Final RRF search result ==
             Title: {result["title"]}\n

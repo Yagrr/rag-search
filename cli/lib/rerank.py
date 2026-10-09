@@ -5,7 +5,6 @@ import time
 from random import randint
 
 from sentence_transformers import CrossEncoder
-from sentence_transformers.base.modality_types import PairInput
 
 from .llm import call_llm
 from .utils_search import (
@@ -43,7 +42,7 @@ def rerank_results(
 
             if logger.isEnabledFor(logging.DEBUG):
                 logger.debug("== RRF search results after individual re-ranking ==\n")
-                for i, result in enumerate(dict(results_reranked_sorted).values()):
+                for _i, result in enumerate(dict(results_reranked_sorted).values()):
                     logger.debug(f"""
                     == Before re-ranking ==
                     Title: {result["title"]}
@@ -90,7 +89,7 @@ def rerank_results(
 
             if logger.isEnabledFor(logging.DEBUG):
                 logger.debug("== RRF search results after batch re-ranking ==\n")
-                for i, result in enumerate(dict(results_reranked_sorted).values()):
+                for _i, result in enumerate(dict(results_reranked_sorted).values()):
                     logger.debug(f"""
                     == Before re-ranking ==
                     Title: {result["title"]}
@@ -125,7 +124,7 @@ def rerank_results(
                 logger.debug(
                     "== RRF search results after cross-encoder re-ranking ==\n"
                 )
-                for i, result in enumerate(dict(results_reranked_sorted).values()):
+                for _i, result in enumerate(dict(results_reranked_sorted).values()):
                     logger.debug(f"""
                     == Before re-ranking ==
                     Title: {result["title"]}

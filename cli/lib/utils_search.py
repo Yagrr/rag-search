@@ -37,14 +37,14 @@ DEFAULT_MULTIMODAL_SEARCH_MODEL = "clip-ViT-B-32"
 
 
 def load_movies() -> dict:
-    with open(PATH_DATA, "r") as file:
+    with open(PATH_DATA) as file:
         data = json.load(file)
 
     return data["movies"]
 
 
 def load_stopwords() -> list[str]:
-    with open(PATH_FILTER, "r") as file:
+    with open(PATH_FILTER) as file:
         data = file.read()
 
     data = data.splitlines()

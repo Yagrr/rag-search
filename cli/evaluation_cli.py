@@ -17,7 +17,7 @@ def main() -> None:
     args = parser.parse_args()
     limit = args.limit
 
-    with open(PATH_EVALUATION_DATASET, "r") as file:
+    with open(PATH_EVALUATION_DATASET) as file:
         data_evaluation = json.load(file)
 
     documents = load_movies()

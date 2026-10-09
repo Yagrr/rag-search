@@ -128,7 +128,8 @@ class InvertedIndex:
             raise ValueError(f"Error - term must be single token '{term}'")
 
         doc_ids = self.index.get(tokens[0], set())
-        return sorted(list(doc_ids))
+        list_doc_ids = list(doc_ids)
+        return sorted(list_doc_ids)
 
     def get_tf(self, doc_id: int, term: str) -> int:
         """
@@ -230,7 +231,7 @@ class InvertedIndex:
         scores: dict[int, float] = {}
         results = []
 
-        for doc_id in self.docmap.keys():
+        for doc_id in self.docmap:
             doc_id_total_bm25 = 0
             for token in tokens:
                 bm25 = self.get_bm25(doc_id, token)
@@ -326,7 +327,7 @@ def command_bm25_search(query: str, limit: int) -> tuple[list[dict], dict[int, f
     index = create_InvertedIndex()
     scores = index.search_bm25(query, limit)
 
-    for id in scores.keys():
+    for id in scores:
         matches.append(index.docmap[id])
 
     return matches, scores

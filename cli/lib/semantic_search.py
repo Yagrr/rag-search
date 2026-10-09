@@ -66,7 +66,7 @@ class SemanticSearch:
         embedding_query = self.generate_embedding(query)
         cos_sim_query_doc = []
 
-        for doc, doc_embedding in zip(self.documents, self.embeddings):
+        for doc, doc_embedding in zip(self.documents, self.embeddings, strict=True):
             cos_sim = cosine_similarity(embedding_query, doc_embedding)
             cos_sim_query_doc.append((cos_sim, doc))
 
@@ -289,7 +289,7 @@ class ChunkedSemanticSearch(SemanticSearch):
             self.path_chunk_metadata
         ):
             self.chunk_embeddings = np.load(self.path_chunk_embeddings)
-            with open(self.path_chunk_metadata, "r") as f:
+            with open(self.path_chunk_metadata) as f:
                 data = json.load(f)
                 self.chunk_metadata = data["chunks"]
             return self.chunk_embeddings
@@ -317,7 +317,7 @@ class ChunkedSemanticSearch(SemanticSearch):
         doc_index_to_score = {}
         for metadata, embedding_chunk in zip(
             self.chunk_metadata, self.chunk_embeddings
-        ):
+            , strict=True):
             cosine_score = cosine_similarity(embedding_query, embedding_chunk)
             chunk_scores.append(
                 {
