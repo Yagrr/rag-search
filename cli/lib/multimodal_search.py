@@ -73,7 +73,9 @@ class MultimodalSearch:
         embedding_image = self.embed_image(path_image)
         scores_to_doc: list[tuple[float, dict]] = []
 
-        for doc, embedding_text in zip(self.documents, self.text_embeddings, strict=True):
+        for doc, embedding_text in zip(
+            self.documents, self.text_embeddings, strict=True
+        ):
             # Map text embeddings back to the actual documents
             cosine_score = cosine_similarity(embedding_image, embedding_text)
             scores_to_doc.append((cosine_score, doc))
